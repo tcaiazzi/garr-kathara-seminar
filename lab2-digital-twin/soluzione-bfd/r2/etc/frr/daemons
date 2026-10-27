@@ -1,0 +1,9 @@
+# Demoni FRR da avviare: zebra (sempre attivo), ospfd e bfdd
+zebra=yes
+ospfd=yes
+bfdd=yes
+
+vtysh_enable=yes
+zebra_options="  -A 127.0.0.1 -s 90000000"
+ospfd_options="  -A 127.0.0.1"
+bfdd_options="   -A 127.0.0.1"

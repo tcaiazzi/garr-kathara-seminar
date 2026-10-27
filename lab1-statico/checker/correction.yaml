@@ -1,0 +1,60 @@
+# Correzione automatica del Lab 1 - rotte statiche
+#
+# Uso (dalla radice del repository):
+#   python3 -m kathara_lab_checker --config lab1-statico/checker/correction.yaml \
+#       --lab labs/lab1/mio-lab1 --no-cache --report-type csv
+
+# Topologia attesa: nomi dei dispositivi e domini di collisione devono coincidere
+lab_inline: |
+  pc1[0]="lanA"
+  r1[0]="lanA"
+  r1[1]="n12"
+  r2[0]="n12"
+  r2[1]="lanB"
+  pc2[0]="lanB"
+
+convergence_time: 10   # solo rotte statiche: non c'e' nulla da far convergere
+default_image: kathara/base
+
+test:
+  requiring_startup:
+    - pc1
+    - r1
+    - r2
+    - pc2
+
+  ip_mapping:
+    pc1:
+      "0": 192.168.1.10/24
+    r1:
+      "0": 192.168.1.1/24
+      "1": 10.0.12.1/30
+    r2:
+      "0": 10.0.12.2/30
+      "1": 192.168.2.1/24
+    pc2:
+      "0": 192.168.2.10/24
+
+  # Solo rotte statiche e default: le reti direttamente connesse non vanno elencate
+  kernel_routes:
+    pc1:
+      - ["0.0.0.0/0", ["192.168.1.1"]]
+    r1:
+      - ["192.168.2.0/24", ["10.0.12.2"]]
+    r2:
+      - ["192.168.1.0/24", ["10.0.12.1"]]
+    pc2:
+      - ["0.0.0.0/0", ["192.168.2.1"]]
+
+  # Full-mesh: ogni dispositivo raggiunge tutti gli indirizzi del piano
+  reachability:
+    pc1: &tutti
+      - 192.168.1.10
+      - 192.168.1.1
+      - 10.0.12.1
+      - 10.0.12.2
+      - 192.168.2.1
+      - 192.168.2.10
+    r1: *tutti
+    r2: *tutti
+    pc2: *tutti

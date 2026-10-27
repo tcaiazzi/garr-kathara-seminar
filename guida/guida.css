@@ -1,0 +1,343 @@
+/* Guida ai laboratori: colori del deck del seminario, tema chiaro e scuro */
+
+:root {
+  --bg: #F5F4EF;
+  --card: #FCFBF8;
+  --tint: #E8ECEF;
+  --line: #D9DDE2;
+  --ink: #14263A;
+  --soft: #4A5566;
+  --blue: #1D63A8;
+  --orange: #A34A12;
+  --orange-light: #F0A060;
+  --green: #2E7D4F;
+  --code-bg: #0F1B29;
+  --code-fg: #E8EDF2;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "SFMono-Regular", "DejaVu Sans Mono", Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0F1B29;
+    --card: #14263A;
+    --tint: #1F3A55;
+    --line: #2B4058;
+    --ink: #E8EDF2;
+    --soft: #B8C4D2;
+    --blue: #7FB5E8;
+    --orange: #F0A060;
+    --green: #7EE787;
+    --code-bg: #0A141F;
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 17px/1.55 var(--sans);
+}
+
+code, pre { font-family: var(--mono); }
+p code, li code, td code, .vedere code {
+  background: var(--tint);
+  padding: 1px 6px;
+  border-radius: 6px;
+  font-size: 0.9em;
+}
+
+button { font: inherit; cursor: pointer; }
+
+/* --- Testata ------------------------------------------------------------ */
+
+.testata {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 32px;
+  background: #14263A;
+  color: #F5F4EF;
+}
+.marchio { width: 44px; height: 44px; flex: none; }
+.marchio line { stroke-width: 4; stroke-linecap: round; }
+.marchio .m-primario { stroke: #7FB5E8; }
+.marchio .m-backup { stroke: #F0A060; stroke-dasharray: 5 4; }
+.marchio circle { fill: #14263A; stroke: #F5F4EF; stroke-width: 3; }
+.titoli { flex: 1; min-width: 0; }
+.titoli .occhiello { margin: 0; color: #F0A060; }
+.testata h1 { margin: 0; font-size: 26px; line-height: 1.2; }
+
+.occhiello {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin: 0 0 4px;
+}
+
+.azioni { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; justify-content: flex-end; }
+.segmenti { display: inline-flex; border: 1px solid #3B5470; border-radius: 999px; overflow: hidden; }
+.segmenti button {
+  border: 0;
+  background: transparent;
+  color: #B8C4D2;
+  padding: 6px 14px;
+  font-size: 14px;
+}
+.segmenti button[aria-pressed="true"] { background: #F5F4EF; color: #14263A; font-weight: 600; }
+.link { background: none; border: 0; color: #B8C4D2; text-decoration: underline; font-size: 14px; }
+
+/* --- Schede delle sezioni --------------------------------------------- */
+
+.schede {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  padding: 16px 32px;
+  background: var(--card);
+  border-bottom: 1px solid var(--line);
+}
+.scheda {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px 12px;
+  text-align: left;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--ink);
+}
+.scheda.attiva { border: 2px solid var(--blue); padding: 9px 13px; }
+.scheda-titolo { font-weight: 700; }
+.scheda-conto { font-size: 14px; color: var(--soft); font-variant-numeric: tabular-nums; }
+.barra { grid-column: 1 / -1; height: 6px; background: var(--tint); border-radius: 999px; overflow: hidden; }
+.barra span { display: block; height: 100%; background: var(--blue); border-radius: 999px; }
+
+/* --- Corpo: passi + contenuto ------------------------------------------ */
+
+.corpo {
+  display: grid;
+  grid-template-columns: 290px minmax(0, 1fr);
+  gap: 32px;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 28px 32px 64px;
+}
+
+.passi { position: sticky; top: 16px; align-self: start; }
+.sottotitolo { margin: 0 0 12px; color: var(--soft); font-size: 15px; }
+.passi ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.passi li button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  border-radius: 10px;
+  padding: 8px 10px;
+  background: transparent;
+  color: var(--ink);
+}
+.passi li button:hover { background: var(--tint); }
+.passi li button.attivo { background: var(--tint); font-weight: 600; }
+.numero {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--line);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--soft);
+}
+.attivo .numero { border-color: var(--blue); color: var(--blue); }
+.fatto .numero { background: var(--green); border-color: var(--green); color: var(--bg); }
+
+.contenuto { min-width: 0; }
+.passo {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 32px 36px;
+}
+.passo h2 { margin: 0 0 16px; font-size: 32px; line-height: 1.2; }
+.passo h3 { margin: 0 0 12px; font-size: 18px; }
+.passo > p { max-width: 70ch; }
+
+.blocco { margin-top: 28px; }
+.nota { color: var(--soft); font-size: 15px; margin: 0 0 12px; }
+
+/* Codice con pulsante di copia */
+.codice {
+  position: relative;
+  margin: 10px 0;
+  background: var(--code-bg);
+  color: var(--code-fg);
+  border-radius: 10px;
+}
+.codice-titolo {
+  padding: 8px 16px 0;
+  font-size: 13px;
+  color: #8FA3B8;
+  font-family: var(--mono);
+}
+.codice pre { margin: 0; padding: 12px 92px 12px 16px; overflow-x: auto; font-size: 15px; line-height: 1.5; }
+.copia {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  border: 1px solid #3B5470;
+  background: #1F3A55;
+  color: #E8EDF2;
+  border-radius: 8px;
+  padding: 4px 12px;
+  font-size: 13px;
+}
+.copia:hover { background: #2B4A6B; }
+.copia.ok { background: #2E7D4F; border-color: #2E7D4F; }
+
+/* Topologie, tabelle, elenchi */
+.topologia { margin: 20px 0; padding: 12px; background: var(--bg); border-radius: 12px; }
+.topologia svg { display: block; width: 100%; height: auto; }
+.t-link { stroke: var(--soft); stroke-width: 3; }
+.t-primary { stroke: var(--blue); stroke-width: 6; }
+.t-backup { stroke: var(--orange); stroke-width: 4; stroke-dasharray: 12 8; }
+.t-host { fill: var(--card); stroke: var(--ink); stroke-width: 2; }
+.t-router { fill: var(--ink); }
+.topologia text { text-anchor: middle; font-family: var(--sans); }
+.t-name { font-size: 17px; font-weight: 700; fill: var(--ink); }
+.t-sub { font-size: 11px; font-family: var(--mono); fill: var(--soft); }
+.t-name.t-on-router, .t-sub.t-on-router { fill: var(--bg); }
+.t-domain { font-size: 13px; font-weight: 700; fill: var(--blue); }
+.t-subnet, .t-addr { font-size: 12px; font-family: var(--mono); fill: var(--soft); }
+.t-cost-primary { font-size: 12px; font-weight: 700; fill: var(--blue); }
+.t-cost-backup { font-size: 12px; font-weight: 700; fill: var(--orange); }
+.t-site { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; fill: var(--soft); }
+.t-cr { stroke: var(--green); stroke-width: 4; }
+.t-cr-box { stroke: var(--green); stroke-width: 3; }
+.t-cr-text { font-size: 13px; font-weight: 700; fill: var(--green); }
+.topologia text.t-end { text-anchor: end; }
+.topologia text.t-start { text-anchor: start; }
+
+.tabella { overflow-x: auto; margin: 16px 0; }
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { background: var(--tint); }
+td { font-family: var(--mono); font-size: 14px; }
+td:first-child { font-family: var(--sans); font-weight: 600; }
+
+.vincoli, .elenco { padding-left: 24px; }
+.vincoli li, .elenco li { margin: 6px 0; }
+
+/* Immagini */
+.figure { display: grid; gap: 16px; }
+figure { margin: 0; }
+figure img { display: block; width: 100%; height: auto; border-radius: 10px; }
+figcaption { margin-top: 6px; font-size: 15px; color: var(--soft); }
+
+.vedere {
+  margin: 20px 0 0;
+  padding: 14px 18px;
+  background: var(--tint);
+  border-left: 4px solid var(--blue);
+  border-radius: 8px;
+}
+
+/* Suggerimenti */
+.suggerimento {
+  margin: 12px 0;
+  padding: 16px 20px;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--orange);
+  border-radius: 8px;
+  background: var(--bg);
+}
+.suggerimento h4 { margin: 0 0 8px; color: var(--orange); }
+.suggerimento p { margin: 6px 0; }
+.sblocca {
+  border: 2px dashed var(--orange);
+  background: transparent;
+  color: var(--orange);
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-weight: 600;
+}
+
+/* Problemi frequenti */
+.problemi {
+  margin-top: 24px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 18px;
+}
+.problemi summary { cursor: pointer; font-weight: 600; color: var(--orange); }
+.problemi li { margin: 8px 0; }
+
+/* Lettore del report */
+.zona-csv {
+  position: relative;
+  display: grid;
+  gap: 4px;
+  padding: 24px;
+  border: 2px dashed var(--line);
+  border-radius: 12px;
+  text-align: center;
+  cursor: pointer;
+  color: var(--soft);
+}
+.zona-csv strong { color: var(--ink); }
+.zona-csv.sopra { border-color: var(--blue); background: var(--tint); }
+.zona-csv input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.report-file { font-family: var(--mono); font-size: 14px; color: var(--soft); margin: 16px 0 8px; }
+.avviso, .successo { padding: 12px 16px; border-radius: 8px; background: var(--tint); }
+.successo { border-left: 4px solid var(--green); }
+.avviso { border-left: 4px solid var(--orange); }
+.gruppo { margin-top: 16px; padding: 14px 18px; border: 1px solid var(--line); border-radius: 10px; }
+.gruppo h4 { display: flex; justify-content: space-between; margin: 0 0 6px; }
+.conteggio { background: var(--orange); color: var(--bg); border-radius: 999px; padding: 0 10px; font-size: 14px; }
+.consiglio { margin: 0 0 8px; font-size: 15px; color: var(--soft); }
+.gruppo ul { margin: 0; padding-left: 20px; }
+.gruppo li { margin: 6px 0; }
+.desc { display: block; font-family: var(--mono); font-size: 14px; }
+.motivo { display: block; font-size: 14px; color: var(--soft); }
+
+/* Navigazione tra i passi */
+.navigazione { display: flex; justify-content: space-between; gap: 12px; margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--line); }
+.primario, .secondario { border-radius: 10px; padding: 10px 20px; font-weight: 600; }
+.primario { background: var(--blue); color: var(--bg); border: 2px solid var(--blue); }
+.secondario { background: transparent; color: var(--ink); border: 2px solid var(--line); }
+.secondario:disabled { opacity: 0.4; cursor: default; }
+
+button:focus-visible, .zona-csv:focus-within { outline: 3px solid var(--orange-light); outline-offset: 2px; }
+
+/* --- Schermi stretti ------------------------------------------------------ */
+
+@media (max-width: 900px) {
+  .testata { flex-wrap: wrap; padding: 16px; }
+  .testata h1 { font-size: 21px; }
+  .azioni { width: 100%; justify-content: space-between; }
+  .schede { grid-template-columns: repeat(2, 1fr); padding: 12px 16px; }
+  .corpo { grid-template-columns: minmax(0, 1fr); gap: 16px; padding: 16px 16px 48px; }
+  .passi { position: static; }
+  .passi ol { display: flex; overflow-x: auto; gap: 6px; padding-bottom: 4px; }
+  .passi li button { white-space: nowrap; }
+  .passo { padding: 20px 18px; }
+  .passo h2 { font-size: 26px; }
+}
+
+/* Lab 1, esercizio extra: colori delle VLAN (sempre affiancati dall'etichetta) */
+.t-trunk { stroke: var(--ink); stroke-width: 6; }
+.t-v100-box { stroke: var(--blue); stroke-width: 3; }
+.t-v101-box { stroke: var(--orange); stroke-width: 3; }
+.topologia text.t-v100-text { font-size: 12px; font-weight: 700; fill: var(--blue); }
+.topologia text.t-v101-text { font-size: 12px; font-weight: 700; fill: var(--orange); }

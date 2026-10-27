@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Guida ai laboratori Kathará</title>
+  <link rel="stylesheet" href="guida.css">
+</head>
+<body>
+  <header class="testata">
+    <svg class="marchio" viewBox="0 0 48 48" aria-hidden="true">
+      <line x1="12" y1="12" x2="36" y2="12" class="m-primario"/>
+      <line x1="36" y1="12" x2="36" y2="36" class="m-primario"/>
+      <line x1="36" y1="36" x2="12" y2="36" class="m-backup"/>
+      <line x1="12" y1="36" x2="12" y2="12" class="m-backup"/>
+      <circle cx="12" cy="12" r="6"/><circle cx="36" cy="12" r="6"/>
+      <circle cx="36" cy="36" r="6"/><circle cx="12" cy="36" r="6"/>
+    </svg>
+    <div class="titoli">
+      <p class="occhiello">Seminario GARR</p>
+      <h1>Guida ai laboratori Kathará</h1>
+    </div>
+    <div class="azioni">
+      <div id="os" class="segmenti" role="group" aria-label="Sistema operativo dei comandi">
+        <button type="button" data-os="unix">Linux / macOS</button>
+        <button type="button" data-os="windows">Windows</button>
+      </div>
+      <button type="button" id="ricomincia" class="link">Ricomincia</button>
+    </div>
+  </header>
+
+  <nav id="schede" class="schede" aria-label="Laboratori"></nav>
+
+  <div class="corpo">
+    <aside id="passi" class="passi" aria-label="Passi del laboratorio"></aside>
+    <main id="contenuto" class="contenuto"></main>
+  </div>
+
+  <noscript><p class="avviso">La guida ha bisogno di JavaScript. In alternativa, seguite le tracce TRACCIA.md nelle cartelle dei lab.</p></noscript>
+
+  <script src="contenuti.js"></script>
+  <script src="guida.js"></script>
+</body>
+</html>

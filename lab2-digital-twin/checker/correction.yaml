@@ -1,0 +1,210 @@
+# Correzione automatica del Lab 2 - change request CR-042 "Attivazione sede C"
+#
+# Verifica due cose:
+#   - la novita': sede C collegata a r4, annunciata in OSPF e raggiungibile;
+#   - la non regressione: il resto della rete si comporta come prima della change.
+#
+# Uso (dalla radice del repository):
+#   python3 -m kathara_lab_checker --config lab2-digital-twin/checker/correction.yaml \
+#       --lab labs/lab2/mio-lab2 --no-cache --report-type csv
+
+lab_inline: |
+  pca[0]="lanA"
+  pcb[0]="lanB"
+  pcc[0]="lanC"
+  r1[0]="lanA"
+  r1[1]="n12"
+  r1[2]="n41"
+  r2[0]="n12"
+  r2[1]="n23"
+  r3[0]="lanB"
+  r3[1]="n23"
+  r3[2]="n34"
+  r4[0]="n34"
+  r4[1]="n41"
+  r4[2]="lanC"
+
+convergence_time: 60   # IGP: margine abbondante per adiacenze e SPF
+default_image: kathara/frr
+
+test:
+  requiring_startup:
+    - pca
+    - pcb
+    - pcc
+    - r1
+    - r2
+    - r3
+    - r4
+
+  ip_mapping:
+    pca:
+      "0": 192.168.10.10/24
+    pcb:
+      "0": 192.168.20.10/24
+    pcc:
+      "0": 192.168.30.10/24    # CR-042
+    r1:
+      "0": 192.168.10.1/24
+      "1": 10.0.0.1/30
+      "2": 10.0.0.14/30
+    r2:
+      "0": 10.0.0.2/30
+      "1": 10.0.0.5/30
+    r3:
+      "0": 192.168.20.1/24
+      "1": 10.0.0.6/30
+      "2": 10.0.0.9/30
+    r4:
+      "0": 10.0.0.10/30
+      "1": 10.0.0.13/30
+      "2": 192.168.30.1/24     # CR-042
+
+  daemons:
+    r1: &router ["zebra", "ospfd"]
+    r2: *router
+    r3: *router
+    r4: *router
+    pca: &host ["!ospfd"]
+    pcb: *host
+    pcc: *host
+
+  protocols:
+    ospfd:
+      # Adiacenze dell'anello: la change non deve toccarle
+      neighbors:
+        r1:
+          - router_id: 10.255.0.2
+          - router_id: 10.255.0.4
+        r2:
+          - router_id: 10.255.0.1
+          - router_id: 10.255.0.3
+        r3:
+          - router_id: 10.255.0.2
+          - router_id: 10.255.0.4
+        r4:
+          - router_id: 10.255.0.3
+          - router_id: 10.255.0.1
+
+      # Area, costi, punto-punto e LAN passive; su r4 anche la nuova lanC
+      interfaces:
+        r1:
+          lo: {area: 0.0.0.0}
+          eth0: {area: 0.0.0.0, timerPassiveIface: true}
+          eth1: {area: 0.0.0.0, networkType: POINTOPOINT, cost: 10}
+          eth2: {area: 0.0.0.0, networkType: POINTOPOINT, cost: 100}
+        r2:
+          lo: {area: 0.0.0.0}
+          eth0: {area: 0.0.0.0, networkType: POINTOPOINT, cost: 10}
+          eth1: {area: 0.0.0.0, networkType: POINTOPOINT, cost: 10}
+        r3:
+          lo: {area: 0.0.0.0}
+          eth0: {area: 0.0.0.0, timerPassiveIface: true}
+          eth1: {area: 0.0.0.0, networkType: POINTOPOINT, cost: 10}
+          eth2: {area: 0.0.0.0, networkType: POINTOPOINT, cost: 100}
+        r4:
+          lo: {area: 0.0.0.0}
+          eth0: {area: 0.0.0.0, networkType: POINTOPOINT, cost: 100}
+          eth1: {area: 0.0.0.0, networkType: POINTOPOINT, cost: 100}
+          eth2: {area: 0.0.0.0, timerPassiveIface: true}   # CR-042
+
+  # Tabelle di routing complete (escluse le reti connesse). Il checker conta le
+  # rotte, quindi vanno elencate tutte. Le /32 compaiono senza prefisso in
+  # `ip route`. Rispetto alla produzione si aggiunge solo 192.168.30.0/24.
+  kernel_routes:
+    pca:
+      - ["0.0.0.0/0", ["192.168.10.1"]]
+    pcb:
+      - ["0.0.0.0/0", ["192.168.20.1"]]
+    pcc:
+      - ["0.0.0.0/0", ["192.168.30.1"]]
+    r1:
+      - ["192.168.20.0/24", ["10.0.0.2"]]
+      - ["192.168.30.0/24", ["10.0.0.13"]]   # CR-042: diretto verso r4
+      - ["10.0.0.4/30", ["10.0.0.2"]]
+      - ["10.0.0.8/30", ["10.0.0.2"]]
+      - ["10.255.0.2", ["10.0.0.2"]]
+      - ["10.255.0.3", ["10.0.0.2"]]
+      - ["10.255.0.4", ["10.0.0.13"]]
+    r2:
+      - ["192.168.10.0/24", ["10.0.0.1"]]
+      - ["192.168.20.0/24", ["10.0.0.6"]]
+      - 192.168.30.0/24   # CR-042: due percorsi di pari costo (ECMP), basta la presenza
+      - ["10.0.0.8/30", ["10.0.0.6"]]
+      - ["10.0.0.12/30", ["10.0.0.1"]]
+      - ["10.255.0.1", ["10.0.0.1"]]
+      - ["10.255.0.3", ["10.0.0.6"]]
+      - 10.255.0.4        # ECMP, come sopra
+    r3:
+      - ["192.168.10.0/24", ["10.0.0.5"]]
+      - ["192.168.30.0/24", ["10.0.0.10"]]  # CR-042: diretto verso r4
+      - ["10.0.0.0/30", ["10.0.0.5"]]
+      - ["10.0.0.12/30", ["10.0.0.5"]]
+      - ["10.255.0.1", ["10.0.0.5"]]
+      - ["10.255.0.2", ["10.0.0.5"]]
+      - ["10.255.0.4", ["10.0.0.10"]]
+    r4:
+      - ["192.168.10.0/24", ["10.0.0.14"]]
+      - ["192.168.20.0/24", ["10.0.0.9"]]
+      - ["10.0.0.0/30", ["10.0.0.14"]]
+      - ["10.0.0.4/30", ["10.0.0.9"]]
+      - ["10.255.0.1", ["10.0.0.14"]]
+      - ["10.255.0.3", ["10.0.0.9"]]
+      - 10.255.0.2   # ECMP
+
+  # Le tre sedi si raggiungono tutte; ogni router raggiunge le loopback
+  reachability:
+    pca:
+      - 10.255.0.1
+      - 10.255.0.2
+      - 10.255.0.3
+      - 10.255.0.4
+      - 192.168.20.10
+      - 192.168.30.10
+    pcb:
+      - 10.255.0.1
+      - 10.255.0.2
+      - 10.255.0.3
+      - 10.255.0.4
+      - 192.168.10.10
+      - 192.168.30.10
+    pcc:
+      - 10.255.0.1
+      - 10.255.0.2
+      - 10.255.0.3
+      - 10.255.0.4
+      - 192.168.10.10
+      - 192.168.20.10
+    r1: &loopback
+      - 10.255.0.1
+      - 10.255.0.2
+      - 10.255.0.3
+      - 10.255.0.4
+    r2: *loopback
+    r3: *loopback
+    r4: *loopback
+
+  custom_commands:
+    r1:
+      - command: ip -4 addr show lo
+        regex_match: "10\\.255\\.0\\.1/32"
+    r2:
+      - command: ip -4 addr show lo
+        regex_match: "10\\.255\\.0\\.2/32"
+    r3:
+      - command: ip -4 addr show lo
+        regex_match: "10\\.255\\.0\\.3/32"
+    r4:
+      - command: ip -4 addr show lo
+        regex_match: "10\\.255\\.0\\.4/32"
+    pca:
+      # Non regressione: tra sede A e sede B si passa ancora da r2 (10.0.0.2)
+      - command: traceroute -n -q 1 -w 1 192.168.20.10
+        regex_match: "(?m)^\\s*2\\s+10\\.0\\.0\\.2\\s"
+    pcc:
+      # CR-042: dalla sede C si esce da r4 e si va direttamente verso la sede
+      # di destinazione (r1 verso A, r3 verso B)
+      - command: traceroute -n -q 1 -w 1 192.168.10.10
+        regex_match: "(?m)^\\s*2\\s+10\\.0\\.0\\.14\\s"
+      - command: traceroute -n -q 1 -w 1 192.168.20.10
+        regex_match: "(?m)^\\s*2\\s+10\\.0\\.0\\.9\\s"

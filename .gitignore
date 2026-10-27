@@ -1,0 +1,7 @@
+.venv/
+labs/
+*_result_*.csv
+results.csv
+__pycache__/
+
+.claude/

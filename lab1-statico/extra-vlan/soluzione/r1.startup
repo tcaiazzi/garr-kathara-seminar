@@ -1,0 +1,18 @@
+ip address add 192.168.1.1/24 dev eth0
+ip address add 10.0.12.1/30 dev eth1
+
+# La LAN della sede B si raggiunge attraverso r2
+ip route add 192.168.2.0/24 via 10.0.12.2
+
+# VLAN 100 e 101: un bridge per VLAN tra la LAN (eth0) e il trunk su n12 (eth1).
+# I bridge non hanno indirizzi: inoltrano solo a livello 2.
+for vid in 100 101; do
+    ip link add link eth0 name eth0.$vid type vlan id $vid
+    ip link add link eth1 name eth1.$vid type vlan id $vid
+    ip link add br$vid type bridge
+    ip link set eth0.$vid master br$vid
+    ip link set eth1.$vid master br$vid
+    ip link set eth0.$vid up
+    ip link set eth1.$vid up
+    ip link set br$vid up
+done

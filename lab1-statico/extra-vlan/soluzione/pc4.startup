@@ -1,0 +1,4 @@
+# VLAN 100 (computer pari): solo la sottointerfaccia taggata, senza gateway
+ip link add link eth0 name eth0.100 type vlan id 100
+ip address add 10.100.0.4/24 dev eth0.100
+ip link set eth0.100 up
