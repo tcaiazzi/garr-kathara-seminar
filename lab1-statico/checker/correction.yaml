@@ -2,7 +2,7 @@
 #
 # Uso (dalla radice del repository):
 #   python3 -m kathara_lab_checker --config lab1-statico/checker/correction.yaml \
-#       --lab labs/lab1/mio-lab1 --no-cache --report-type csv
+#       --lab labs/lab1/static-routing --no-cache --report-type csv
 
 # Topologia attesa: nomi dei dispositivi e domini di collisione devono coincidere
 lab_inline: |
@@ -13,7 +13,7 @@ lab_inline: |
   r2[1]="lanB"
   pc2[0]="lanB"
 
-convergence_time: 10   # solo rotte statiche: non c'e' nulla da far convergere
+convergence_time: 2   # solo rotte statiche: non c'e' nulla da far convergere
 default_image: kathara/base
 
 test:

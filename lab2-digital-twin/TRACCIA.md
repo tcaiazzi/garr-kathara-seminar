@@ -1,17 +1,17 @@
-# Lab 2 — Digital twin: validare una change request (50 minuti)
+# Lab 2 — Digital twin di una rete OSPF (50 minuti)
 
 ## Lo scenario
 
-Un ente ha due sedi collegate da un piccolo backbone regionale di quattro router ad anello, in esercizio con OSPF. Il team di rete ha in coda una **change request**: attivare una terza sede.
+Siamo i tecnici di rete di un ente con due sedi, collegate da un piccolo backbone regionale di quattro router ad anello, in esercizio con OSPF. Abbiamo in coda una **change request**: attivare una terza sede.
 
-Prima di toccare la produzione, la change si prova sul **gemello digitale**: un lab Kathará con gli stessi dispositivi, gli stessi collegamenti, gli stessi indirizzi e le stesse configurazioni della rete reale. Il checker fa da collaudo: verifica che la novità funzioni **e** che il resto della rete continui a comportarsi esattamente come prima.
+Prima di toccare la produzione, proviamo la modifica sul **gemello digitale**: un lab Kathará con gli stessi dispositivi, gli stessi collegamenti, gli stessi indirizzi e le stesse configurazioni della rete reale. Il checker fa da collaudo: verifica che il nuovo requisito funzioni **e** che il resto della rete continui a comportarsi esattamente come prima.
 
 Il lab ha quattro fasi:
 
-1. conoscere la rete di produzione (10');
-2. leggere il ticket (5');
-3. applicare la change sul twin (20');
-4. verificare e collaudare con il checker (15').
+1. avvio ed esplorazione del lab (10');
+2. il ticket (5');
+3. applichiamo il nuovo requisito sul twin (20');
+4. verifichiamo il nuovo requisito e lo collaudiamo con il checker (15').
 
 ---
 
@@ -23,13 +23,13 @@ Il lab ha quattro fasi:
        sede A                                                 sede B
    192.168.10.0/24                                        192.168.20.0/24
 
- pca ─────────── r1 ───────── n12 ───────── r2
+ pc_a ────────── r1 ───────── n12 ───────── r2
        lanA       │        10.0.0.0/30       │
                   │                          │
                  n41                        n23
             10.0.0.12/30                10.0.0.4/30
                   │                          │
-                 r4 ───────── n34 ───────── r3 ─────────── pcb
+                 r4 ───────── n34 ───────── r3 ─────────── pc_b
                           10.0.0.8/30               lanB
 ```
 
@@ -37,8 +37,8 @@ Il lab ha quattro fasi:
 
 | Dispositivo | Interfaccia | Dominio | Indirizzo |
 |---|---|---|---|
-| pca | eth0 | lanA | 192.168.10.10/24 (gw 192.168.10.1) |
-| pcb | eth0 | lanB | 192.168.20.10/24 (gw 192.168.20.1) |
+| pc_a | eth0 | lanA | 192.168.10.10/24 (gw 192.168.10.1) |
+| pc_b | eth0 | lanB | 192.168.20.10/24 (gw 192.168.20.1) |
 | r1 | eth0 | lanA | 192.168.10.1/24 |
 | r1 | eth1 | n12 | 10.0.0.1/30 |
 | r1 | eth2 | n41 | 10.0.0.14/30 |
@@ -50,28 +50,50 @@ Il lab ha quattro fasi:
 | r4 | eth0 | n34 | 10.0.0.10/30 |
 | r4 | eth1 | n41 | 10.0.0.13/30 |
 
-Ogni router ha una loopback `10.255.0.N/32` su `lo` (r1 → 10.255.0.1, …, r4 → 10.255.0.4), usata come router-id OSPF.
+Ogni router ha una loopback `10.255.0.N/32` su `lo` (r1 → 10.255.0.1, …, r4 → 10.255.0.4), usata come router-id OSPF. Sui link di backbone /30 ci sono due soli indirizzi utili per link: .1/.2, .5/.6, .9/.10, .13/.14. Tutti gli indirizzi, loopback comprese, sono già negli startup della produzione.
 
 ### Come è configurata la produzione
 
 1. **OSPF in area 0** su tutti i router; sono annunciate le reti di backbone, le loopback e le LAN di sede.
-2. Le interfacce verso le **LAN di sede sono passive**: nessuna adiacenza OSPF verso gli utenti.
+2. Le interfacce verso le **LAN di sede sono passive**: annunciate in OSPF, ma senza adiacenze verso gli utenti.
 3. Il traffico tra sede A e sede B passa **per r2** (percorso primario); il percorso via r4 è di **backup**. Costi: **10** su n12 e n23, **100** su n34 e n41.
 4. Ogni router raggiunge le **loopback** di tutti gli altri.
-5. I link di backbone sono **punto-punto** in OSPF (niente elezione DR/BDR).
+5. I link di backbone sono **punto-punto** in OSPF: niente elezione DR/BDR sui /30, le adiacenze salgono più in fretta.
+
+Per esempio, la configurazione OSPF di r1 (`r1/etc/frr/frr.conf`):
+
+```
+interface eth0
+ ip ospf passive
+interface eth1
+ ip ospf network point-to-point
+ ip ospf cost 10
+interface eth2
+ ip ospf network point-to-point
+ ip ospf cost 100
+!
+router ospf
+ ospf router-id 10.255.0.1
+ network 10.255.0.1/32 area 0
+ network 192.168.10.0/24 area 0
+ network 10.0.0.0/30 area 0
+ network 10.0.0.12/30 area 0
+```
+
+`network … area 0` accende OSPF sulle interfacce in quel prefisso e lo annuncia. Un'area è un gruppo di router con la stessa LSDB: la 0 è il backbone, qui l'unica. Nel file `/etc/frr/daemons` c'è `ospfd=yes`, oltre a `zebra=yes`: senza il demone, il blocco `router ospf` non ha effetto.
 
 ---
 
-## Fase 1 — Conoscere la rete di produzione (10')
+## Fase 1 — Avvio ed esplorazione del lab (10')
 
-La cartella `produzione/` contiene il twin della rete in esercizio, già configurato. Copiatelo nella vostra cartella di lavoro e avviatelo.
+La cartella `produzione/` contiene il twin della rete in esercizio, già configurato. Copiamolo nella nostra cartella di lavoro e avviamolo.
 
 Linux / macOS:
 
 ```
 mkdir -p labs/lab2
-cp -r lab2-digital-twin/produzione labs/lab2/mio-lab2
-cd labs/lab2/mio-lab2
+cp -r lab2-digital-twin/produzione labs/lab2/ospf
+cd labs/lab2/ospf
 kathara lstart
 ```
 
@@ -79,12 +101,12 @@ Windows (PowerShell):
 
 ```
 New-Item -ItemType Directory -Force labs\lab2
-Copy-Item -Recurse lab2-digital-twin\produzione labs\lab2\mio-lab2
-cd labs\lab2\mio-lab2
+Copy-Item -Recurse lab2-digital-twin\produzione labs\lab2\ospf
+cd labs\lab2\ospf
 kathara lstart
 ```
 
-Esplorate la rete. Su un router (`kathara connect r1`, poi `vtysh` per la CLI di FRR):
+Esploriamo la rete. Su un router (`kathara connect r1`, poi `vtysh` per la CLI di FRR: il prompt passa da `root@r1:/#` a `r1#`):
 
 ```
 show ip ospf neighbor          ! adiacenze: due vicini per router, Full/-
@@ -92,23 +114,25 @@ show ip ospf interface         ! area, costo, tipo di rete, passive
 show ip route ospf             ! rotte imparate via OSPF
 ```
 
-Da pca:
+Da pc_a:
 
 ```
 traceroute -n 192.168.20.10    ! il secondo hop è 10.0.0.2 (r2)
 ```
 
-**Prova di failover.** Spegnete n12 **a entrambe le estremità**: in Kathará un dominio di collisione è uno switch virtuale, e se spegnete un solo lato l'altro non se ne accorge.
+**Prova di failover: abbattiamo n12.** Spegniamo n12 **su entrambe le estremità**: con un solo lato down l'altro resta up, e l'adiacenza cade solo allo scadere del dead interval.
 
 ```
 kathara exec r1 "ip link set eth1 down"
 kathara exec r2 "ip link set eth0 down"
-kathara exec pca "traceroute -n 192.168.20.10"    # ora passa per r4
+kathara exec pc_a "traceroute -n 192.168.20.10"    # ora passa per r4 (10.0.0.13)
 kathara exec r1 "ip link set eth1 up"
 kathara exec r2 "ip link set eth0 up"
 ```
 
-Domande per orientarsi: qual è il next-hop di r1 verso la sede B, e con che costo? Perché r2 ha due next-hop verso la loopback di r4?
+Al ripristino il traffico torna su r2 dopo circa 10 secondi: il tempo di un hello OSPF per ricostruire l'adiacenza.
+
+Domande per orientarci: qual è il next-hop di r1 verso la sede B, e con che costo? Perché r2 ha due next-hop verso la loopback di r4?
 
 ---
 
@@ -125,8 +149,8 @@ Domande per orientarsi: qual è il next-hop di r1 verso la sede B, e con che cos
 > | Dominio di collisione | `lanC` |
 > | Rete della sede C | 192.168.30.0/24 |
 > | r4, nuova interfaccia `eth2` | 192.168.30.1/24 |
-> | Host di sede `pcc`, `eth0` | 192.168.30.10/24, gateway 192.168.30.1 |
-> | Immagine di `pcc` | `kathara/base` |
+> | Host di sede `pc_c`, `eth0` | 192.168.30.10/24, gateway 192.168.30.1 |
+> | Immagine di `pc_c` | `kathara/base` |
 >
 > **Requisiti**
 >
@@ -137,34 +161,34 @@ Domande per orientarsi: qual è il next-hop di r1 verso la sede B, e con che cos
 >
 > **Criterio di accettazione.** Il collaudo `lab2-digital-twin/checker/correction.yaml` passa al 100%.
 
-Dopo la change, la topologia diventa così:
+Dopo la CR-042, la topologia diventa così:
 
 ```
- pca ─────────── r1 ───────── n12 ───────── r2
+ pc_a ────────── r1 ───────── n12 ───────── r2
        lanA       │                          │
                  n41                        n23
                   │                          │
-                 r4 ───────── n34 ───────── r3 ─────────── pcb
+                 r4 ───────── n34 ───────── r3 ─────────── pc_b
                   │                                 lanB
                   │ lanC 192.168.30.0/24   (CR-042)
-                 pcc
+                 pc_c
                sede C
 ```
 
 ---
 
-## Fase 3 — Applicare la change sul twin (20')
+## Fase 3 — Applichiamo il nuovo requisito (20')
 
-Lavorate nella vostra copia, `labs/lab2/mio-lab2`. La change tocca **quattro file**:
+Lavoriamo sempre nella nostra copia, `labs/lab2/ospf`. Il nuovo requisito tocca **quattro file**, nessun altro:
 
 | File | Cosa cambia |
 |---|---|
-| `lab.conf` | il nuovo dispositivo `pcc` sul dominio `lanC`, e la nuova interfaccia di r4 sullo stesso dominio |
+| `lab.conf` | il nuovo dispositivo `pc_c` sul dominio `lanC`, e la nuova interfaccia di r4 sullo stesso dominio |
 | `r4.startup` | l'indirizzo della nuova interfaccia di r4 |
-| `pcc.startup` (nuovo) | indirizzo e default route dell'host della sede C |
+| `pc_c.startup` (nuovo) | indirizzo e default route dell'host della sede C |
 | `r4/etc/frr/frr.conf` | la nuova LAN in OSPF, come interfaccia passiva |
 
-Poi riavviate il twin, che rilegge anche `lab.conf`:
+Poi riavviamo il twin, che rilegge anche `lab.conf`:
 
 ```
 kathara lrestart
@@ -174,7 +198,7 @@ kathara lrestart
 <summary>Suggerimento 1 · la sintassi che serve</summary>
 
 - In `lab.conf` le interfacce di un dispositivo sono numerate senza buchi: r4 ha già `eth0` ed `eth1`, quindi la nuova è `r4[2]`.
-- Un host ha bisogno di un indirizzo e di una default route, come `pca` e `pcb`: guardate i loro file `.startup`.
+- Un host vuole un indirizzo e una default route: copiamo lo schema di `pc_a.startup`.
 - In FRR, come per le LAN di r1 e r3: un blocco `interface ethX` con `ip ospf passive` e un'istruzione `network <rete>/<prefisso> area 0` sotto `router ospf`.
 
 </details>
@@ -183,7 +207,7 @@ kathara lrestart
 <summary>Suggerimento 2 · le righe da aggiungere su r4</summary>
 
 ```
-! LAN della sede C (CR-042): annunciata ma passiva
+! LAN della sede C (CR-042)
 interface eth2
  ip ospf passive
 !
@@ -196,70 +220,57 @@ router ospf
 
 ---
 
-## Fase 4 — Verificare e collaudare (15')
+## Fase 4 — Verifichiamo il nuovo requisito (15')
 
-Prima a mano. Da pcc:
+Prima a mano. Da pc_c:
 
 ```
 traceroute -n 192.168.10.10    ! verso la sede A: r4, poi r1 (10.0.0.14)
 traceroute -n 192.168.20.10    ! verso la sede B: r4, poi r3 (10.0.0.9)
 ```
 
-Su r1, in `vtysh`, `show ip route ospf` deve mostrare la nuova rete 192.168.30.0/24 via 10.0.0.13 (r4). E la non regressione: da pca, `traceroute -n 192.168.20.10` passa ancora per 10.0.0.2.
+Su r1, in `vtysh`, `show ip route ospf` deve mostrare la nuova rete 192.168.30.0/24 via 10.0.0.13 (r4). E la non regressione: da pc_a, `kathara exec pc_a "traceroute -n 192.168.20.10"` passa ancora per 10.0.0.2 (r2).
 
-Poi il collaudo. Fermate il twin (`kathara lclean`) e, dalla radice del repository, con il virtualenv attivo:
+Poi il collaudo con il checker. Torniamo alla radice del repository e, con il virtualenv attivo, fermiamo il twin e lanciamo il checker:
 
 ```
-python -m kathara_lab_checker --config lab2-digital-twin/checker/correction.yaml --lab labs/lab2/mio-lab2 --no-cache --report-type csv
+cd ../../..
+kathara lclean -d labs/lab2/ospf
+python -m kathara_lab_checker --config lab2-digital-twin/checker/correction.yaml --lab labs/lab2/ospf --no-cache --report-type csv
 ```
 
-Il checker attende 60 secondi per la convergenza OSPF prima di eseguire i test. Il dettaglio degli errori è in `labs/lab2/mio-lab2/mio-lab2_result_failed.csv`.
+Il checker attende 60 secondi per la convergenza OSPF prima di eseguire i test. Il dettaglio degli errori è in `labs/lab2/ospf/ospf_result_failed.csv`.
 
 Cosa verifica:
 
-- **la change:**
-  - pcc e lanC nella topologia, con i loro indirizzi;
+- **il nuovo requisito:**
+  - pc_c e lanC nella topologia, con i loro indirizzi;
   - `eth2` di r4 in area 0 e passiva;
   - la rotta verso 192.168.30.0/24 su tutti i router;
   - la raggiungibilità tra le tre sedi;
-  - i percorsi da pcc verso A e B;
+  - i percorsi da pc_c verso A e B;
 - **la non regressione:**
-  - adiacenze, costi e tipo di rete invariati;
+  - adiacenze, costi e punto-punto invariati;
   - tabelle di routing complete;
   - loopback raggiungibili;
   - il traffico A↔B ancora via r2.
 
-Se lanciate il checker sulla cartella `produzione/` così com'è, i test della non regressione passano e quelli della change falliscono: è il punto di partenza giusto.
+La soluzione passa 143 test su 143. La produzione così com'è ne passa 120 su 145: i test della non regressione passano e quelli della sede C falliscono. È il punto di partenza giusto.
 
 ### Errori frequenti
 
-- **pcc non compare**: `lab.conf` è stato modificato ma il lab non è stato riavviato con `kathara lrestart`.
+- **pc_c non compare**: dopo aver modificato `lab.conf` serve `kathara lrestart`.
 - **r4 non ha `eth2`**: in `lab.conf` manca `r4[2]="lanC"`, o la numerazione salta un numero.
-- **La sede C non raggiunge A e B**: manca `network 192.168.30.0/24 area 0` su r4, oppure pcc non ha la default route.
-- **Il test sulle interfacce OSPF di r4 fallisce**: `eth2` non è passiva.
-- **Falliscono test che prima passavano**: la change ha toccato altro, per esempio un costo. Il collaudo serve proprio a scoprirlo prima della produzione.
+- **La sede C è isolata**: manca `network 192.168.30.0/24 area 0` su r4, oppure pc_c non ha la default route.
+- **`eth2` non passiva**: OSPF cercherebbe vicini verso gli utenti, e il checker lo segnala.
+- **Falliscono test che prima passavano**: oltre al nuovo requisito è cambiato altro, per esempio un costo. È una regressione: il collaudo serve proprio a scoprirla prima della produzione.
 - **Su r2 la rete della sede C ha due next-hop**: non è un errore. I percorsi via r1 e via r3 costano uguale (ECMP), e il checker lo sa.
 
 ---
 
-## Per chi finisce prima: change request "BFD sul backbone"
+## Extra per casa: BFD sul backbone
 
-Il team di produzione segnala un altro problema. Su alcuni collegamenti in fibra, un guasto lascia l'interfaccia *up* ma il traffico non passa più. OSPF se ne accorge solo allo scadere del dead interval (40 secondi), e per tutto quel tempo il traffico viene perso. La change request è:
-
-> Abilitare **BFD** su tutti i link di backbone, associato a OSPF, con i timer di default.
-
-Da fare, sulla rete che include già la sede C:
-
-1. attivare il demone `bfdd` in `daemons` (`bfdd=yes`) su tutti i router;
-2. aggiungere `ip ospf bfd` alle interfacce di backbone (non alle LAN di sede);
-3. verificare con `show bfd peers` (in `vtysh`) che tutte le sessioni siano `up`;
-4. collaudare con il checker dedicato:
-
-```
-python -m kathara_lab_checker --config lab2-digital-twin/checker/correction-bfd.yaml --lab labs/lab2/mio-lab2 --no-cache --report-type csv
-```
-
-Nel Lab 3 misureremo l'effetto di questa modifica sul twin.
+La seconda change request, BFD su tutti i link di backbone, è l'extra per casa alla fine del Lab 3: lì possiamo anche misurarne l'effetto con `chaos.py`. La traccia è in [lab3-api/README.md](../lab3-api/README.md#extra-per-casa--bfd-sul-backbone).
 
 ---
 

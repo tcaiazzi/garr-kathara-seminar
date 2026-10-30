@@ -1,4 +1,3 @@
-# VLAN 100 (computer pari): solo la sottointerfaccia taggata, senza gateway
-ip link add link eth0 name eth0.100 type vlan id 100
-ip address add 10.100.0.4/24 dev eth0.100
-ip link set eth0.100 up
+# VLAN 100 (computer pari). L'host non sa di essere in una VLAN:
+# il tag lo mette s1, sulla porta di accesso.
+ip address add 10.100.0.4/24 dev eth0

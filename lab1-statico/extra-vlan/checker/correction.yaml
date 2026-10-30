@@ -1,21 +1,24 @@
 # Correzione automatica del Lab 1, esercizio extra - due VLAN tra le sedi
 #
-# Verifica le VLAN 100 (pc2, pc4) e 101 (pc1, pc3) e che la parte statica del
-# Lab 1 funzioni ancora.
+# Ogni host è su una LAN dedicata, collegata a una porta di accesso dello switch (s1 o s2).
+# Gli host non usano tag: verifica le VLAN 100 (pc2, pc4) e 101 (pc1, pc3), le
+# porte di accesso nel bridge giusto e il trunk taggato su n12.
 #
 # Uso (dalla radice del repository):
 #   python3 -m kathara_lab_checker --config lab1-statico/extra-vlan/checker/correction.yaml \
-#       --lab labs/lab1/mio-lab1-vlan --no-cache --report-type csv
+#       --lab labs/lab1/vlan --no-cache --report-type csv
 
 lab_inline: |
-  pc1[0]="lanA"
-  pc4[0]="lanA"
-  r1[0]="lanA"
-  r1[1]="n12"
-  r2[0]="n12"
-  r2[1]="lanB"
-  pc2[0]="lanB"
-  pc3[0]="lanB"
+  pc1[0]="lan1"
+  pc4[0]="lan4"
+  s1[0]="lan1"
+  s1[1]="n12"
+  s1[2]="lan4"
+  s2[0]="n12"
+  s2[1]="lan2"
+  s2[2]="lan3"
+  pc2[0]="lan2"
+  pc3[0]="lan3"
 
 convergence_time: 10   # niente protocolli di routing: basta che gli startup siano finiti
 default_image: kathara/base
@@ -26,73 +29,56 @@ test:
     - pc2
     - pc3
     - pc4
-    - r1
-    - r2
+    - s1
+    - s2
 
-  # Le sottointerfacce VLAN si indicano per nome
+  # Gli host hanno solo un indirizzo su eth0, senza sottointerfacce VLAN
   ip_mapping:
     pc1:
-      "0": 192.168.1.10/24
-      "eth0.101": 10.101.0.1/24
+      "0": 10.101.0.1/24
     pc4:
-      "eth0.100": 10.100.0.4/24
-    r1:
-      "0": 192.168.1.1/24
-      "1": 10.0.12.1/30
-    r2:
-      "0": 10.0.12.2/30
-      "1": 192.168.2.1/24
+      "0": 10.100.0.4/24
     pc2:
-      "0": 192.168.2.10/24
-      "eth0.100": 10.100.0.2/24
+      "0": 10.100.0.2/24
     pc3:
-      "eth0.101": 10.101.0.3/24
-
-  # Non regressione: le rotte statiche del Lab 1 non cambiano
-  kernel_routes:
-    pc1:
-      - ["0.0.0.0/0", ["192.168.1.1"]]
-    r1:
-      - ["192.168.2.0/24", ["10.0.12.2"]]
-    r2:
-      - ["192.168.1.0/24", ["10.0.12.1"]]
-    pc2:
-      - ["0.0.0.0/0", ["192.168.2.1"]]
+      "0": 10.101.0.3/24
 
   reachability:
-    # Parte statica del Lab 1
     pc1:
-      - 192.168.1.1
-      - 10.0.12.2
-      - 192.168.2.10
       - 10.101.0.3        # VLAN 101, verso la sede B
-    pc2:
-      - 192.168.2.1
-      - 10.0.12.1
-      - 192.168.1.10
-      - 10.100.0.4        # VLAN 100, verso la sede A
     pc3:
       - 10.101.0.1        # VLAN 101, verso la sede A
     pc4:
       - 10.100.0.2        # VLAN 100, verso la sede B
+    pc2:
+      - 10.100.0.4        # VLAN 100, verso la sede A
 
-  # Il trunk su n12 trasporta entrambe le VLAN, taggate, su r1 e r2
+  # Porte di accesso nel bridge della loro VLAN; trunk su n12 taggato con
+  # entrambe le VLAN, ciascuna nel suo bridge
   custom_commands:
-    r1:
-      - command: ip -d link show eth1.100
-        regex_match: "802\\.1Q id 100"
+    s1:
+      - command: ip link show eth0
+        regex_match: "master br101"
+      - command: ip link show eth2
+        regex_match: "master br100"
       - command: ip -d link show eth1.101
         regex_match: "802\\.1Q id 101"
-      - command: ip -d link show eth0.100
-        regex_match: "802\\.1Q id 100"
-      - command: ip -d link show eth0.101
-        regex_match: "802\\.1Q id 101"
-    r2:
-      - command: ip -d link show eth0.100
-        regex_match: "802\\.1Q id 100"
-      - command: ip -d link show eth0.101
-        regex_match: "802\\.1Q id 101"
+      - command: ip link show eth1.101
+        regex_match: "master br101"
       - command: ip -d link show eth1.100
         regex_match: "802\\.1Q id 100"
-      - command: ip -d link show eth1.101
+      - command: ip link show eth1.100
+        regex_match: "master br100"
+    s2:
+      - command: ip link show eth1
+        regex_match: "master br100"
+      - command: ip link show eth2
+        regex_match: "master br101"
+      - command: ip -d link show eth0.100
+        regex_match: "802\\.1Q id 100"
+      - command: ip link show eth0.100
+        regex_match: "master br100"
+      - command: ip -d link show eth0.101
         regex_match: "802\\.1Q id 101"
+      - command: ip link show eth0.101
+        regex_match: "master br101"

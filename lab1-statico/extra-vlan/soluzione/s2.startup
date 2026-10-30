@@ -1,0 +1,20 @@
+# s2 fa da switch: nessun indirizzo IP, solo bridge.
+# Porte di accesso: eth1 (pc2, VLAN 100) ed eth2 (pc3, VLAN 101). Trunk: eth0.
+# Un frame entra senza tag dalla porta di accesso, il bridge lo inoltra alla
+# sottointerfaccia del trunk, che lo invia su n12 con il tag della VLAN.
+
+# VLAN 100: porta di accesso eth1 (pc2) + trunk eth0, taggato 100
+ip link add link eth0 name eth0.100 type vlan id 100
+ip link add br100 type bridge
+ip link set eth1 master br100
+ip link set eth0.100 master br100
+ip link set eth0.100 up
+ip link set br100 up
+
+# VLAN 101: porta di accesso eth2 (pc3) + trunk eth0, taggato 101
+ip link add link eth0 name eth0.101 type vlan id 101
+ip link add br101 type bridge
+ip link set eth2 master br101
+ip link set eth0.101 master br101
+ip link set eth0.101 up
+ip link set br101 up

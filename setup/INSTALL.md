@@ -1,8 +1,8 @@
 # Preparazione del PC
 
-Completa questa guida **prima del seminario**: i download pesano qualche GB e in aula non ci sarà tempo per farli. Alla fine lancia lo script di verifica (punto 5): se stampa "Tutto pronto per il seminario!" sei a posto.
+Completiamo questa guida **prima del seminario**: i download pesano qualche GB e in aula non ci sarà tempo per farli. Alla fine lanciamo lo script di verifica (punto 5): se stampa "Tutto pronto per il seminario!" siamo a posto.
 
-> Servono i **permessi di amministratore** sul PC per installare Docker e Kathará. Se usi un PC aziendale senza questi permessi, chiedi supporto in anticipo o organizzati per lavorare in coppia con un collega.
+> Servono i **permessi di amministratore** sul PC per installare Docker e Kathará. Con un PC aziendale senza questi permessi, chiediamo supporto in anticipo o organizziamoci per lavorare in coppia con un collega.
 
 ## 1. Docker
 
@@ -10,17 +10,17 @@ Completa questa guida **prima del seminario**: i download pesano qualche GB e in
 |---|---|
 | Windows | Docker Desktop (con backend WSL 2) |
 | macOS | Docker Desktop (Intel o Apple Silicon) |
-| Linux | Docker Engine, e aggiungi il tuo utente al gruppo `docker` |
+| Linux | Docker Engine, e aggiungiamo il nostro utente al gruppo `docker` |
 
 Istruzioni ufficiali: https://docs.docker.com/get-docker/
 
-Su Windows e macOS, **avvia Docker Desktop** e attendi che sia pronto prima di proseguire.
+Su Windows e macOS, **avviamo Docker Desktop** e attendiamo che sia pronto prima di proseguire.
 
 ## 2. Kathará
 
-Segui la sezione *Installation* del repository ufficiale per il tuo sistema: https://github.com/KatharaFramework/Kathara#installation
+Seguiamo la sezione *Installation* del repository ufficiale per il nostro sistema: https://github.com/KatharaFramework/Kathara#installation
 
-Verifica l'installazione:
+Verifichiamo l'installazione:
 
 ```
 kathara check
@@ -30,10 +30,10 @@ L'ultima riga deve essere `✓ Container run successfully.`
 
 ## 3. Python ≥ 3.11 e virtualenv
 
-Il checker automatico dei lab (`kathara-lab-checker`) richiede **Python 3.11 o superiore**. Controlla la versione con `python3 --version` (su Windows: `py --version`).
+Il checker automatico dei lab (`kathara-lab-checker`) richiede **Python 3.11 o superiore**. Controlliamo la versione con `python3 --version` (su Windows: `py --version`).
 
-- **Windows**: installa Python da https://www.python.org/downloads/ e spunta "Add python.exe to PATH".
-- **macOS**: il `python3` di sistema è troppo vecchio (3.9). Installa Python da https://www.python.org/downloads/ oppure con `brew install python@3.12`.
+- **Windows**: installiamo Python da https://www.python.org/downloads/ e spuntiamo "Add python.exe to PATH".
+- **macOS**: il `python3` di sistema è troppo vecchio (3.9). Installiamo Python da https://www.python.org/downloads/ oppure con `brew install python@3.12`.
 - **Linux**: le distribuzioni recenti (Ubuntu ≥ 23.04, Debian 12) hanno già Python ≥ 3.11. Potrebbe servire il pacchetto `python3-venv`.
 
 Usiamo un **virtualenv**. Su molte distribuzioni Linux un `pip install` fuori da un virtualenv fallisce con l'errore `externally-managed-environment`. Dalla cartella del repository:
@@ -42,7 +42,7 @@ Usiamo un **virtualenv**. Su molte distribuzioni Linux un `pip install` fuori da
 python3 -m venv .venv
 ```
 
-Attivalo ogni volta che apri un nuovo terminale per il seminario:
+Attiviamolo ogni volta che apriamo un nuovo terminale per il seminario:
 
 | Sistema | Comando di attivazione |
 |---|---|
@@ -63,7 +63,7 @@ Il comando installa `kathara-lab-checker` e le API Python di Kathará (pacchetto
 
 ## 5. Immagini e verifica finale
 
-Scarica in anticipo le immagini usate nei lab:
+Scarichiamo in anticipo le immagini usate nei lab:
 
 ```
 docker pull kathara/base

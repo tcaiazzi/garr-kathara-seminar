@@ -1,0 +1,3 @@
+# s1 fa da switch: nessun indirizzo IP.
+# Porte di accesso: eth0 (pc1, VLAN 101) ed eth2 (pc4, VLAN 100). Trunk: eth1.
+# Per ogni VLAN: una sottointerfaccia sul trunk e un bridge con la porta di accesso.

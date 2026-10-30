@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Lab 3, parte A - Il vostro primo lab con le API di Kathara (soluzione).
+"""Lab 3, parte A - Il nostro primo lab con le API di Kathara (soluzione).
 
 Ricostruisce da codice la topologia del Lab 1 (pc1 - r1 - r2 - pc2), la avvia,
 fa un ping da pc1 a pc2 e alla fine la ferma.
@@ -62,10 +62,12 @@ def main():
         manager.deploy_lab(lab)
         print("Lab avviato. Ping da pc1 verso pc2...")
 
-        # TODO 5: il ping da pc1, aspettando che pc1 abbia finito l'avvio
+        # TODO 5: il ping da pc1, aspettando che pc1 abbia finito l'avvio (wait=True)
+        # e ricevendo l'output tutto insieme (stream=False). Documentazione:
+        # https://github.com/KatharaFramework/Kathara/wiki/Kathara.manager.Kathara#method-katharaexec
         stdout, _, exit_code = manager.exec("pc1", "ping -c 3 192.168.2.10", lab=lab, wait=True, stream=False)
         print((stdout or b"").decode())
-        print("pc1 raggiunge pc2!" if exit_code == 0 else "pc1 NON raggiunge pc2: controllate indirizzi e rotte")
+        print("pc1 raggiunge pc2!" if exit_code == 0 else "pc1 NON raggiunge pc2: controlliamo indirizzi e rotte")
     finally:
         manager.undeploy_lab(lab=lab)
         print("Lab fermato")

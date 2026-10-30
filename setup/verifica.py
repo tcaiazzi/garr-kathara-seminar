@@ -39,14 +39,14 @@ except ImportError:
 
 # 3. Kathara da riga di comando
 report("comando kathara disponibile", shutil.which("kathara") is not None,
-       "installa Kathara: https://github.com/KatharaFramework/Kathara#installation")
+       "installiamo Kathara: https://github.com/KatharaFramework/Kathara#installation")
 
 # 4. Docker e immagini
 docker = shutil.which("docker")
-report("comando docker disponibile", docker is not None, "installa Docker: https://docs.docker.com/get-docker/")
+report("comando docker disponibile", docker is not None, "installiamo Docker: https://docs.docker.com/get-docker/")
 if docker:
     running = subprocess.run([docker, "info"], capture_output=True).returncode == 0
-    report("Docker in esecuzione", running, "avvia Docker Desktop (o il servizio docker su Linux)")
+    report("Docker in esecuzione", running, "avviamo Docker Desktop (o il servizio docker su Linux)")
     for image in ("kathara/base", "kathara/frr"):
         present = subprocess.run([docker, "image", "inspect", image], capture_output=True).returncode == 0
         report(f"immagine {image} scaricata", present, f"docker pull {image}")
@@ -69,11 +69,11 @@ if Kathara and all(results):
     finally:
         manager.undeploy_lab(lab=lab)
 elif Kathara:
-    print("[--] mini-lab saltato: correggi prima i punti KO")
+    print("[--] mini-lab saltato: correggiamo prima i punti KO")
 
 print()
 if all(results):
     print("Tutto pronto per il seminario!")
 else:
-    print("Qualcosa non va: segui le indicazioni accanto ai KO e rilancia lo script.")
+    print("Qualcosa non va: seguiamo le indicazioni accanto ai KO e rilanciamo lo script.")
     sys.exit(1)

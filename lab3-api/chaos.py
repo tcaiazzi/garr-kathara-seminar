@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """Lab 3 - Guasti programmati sul digital twin del Lab 2.
 
-Lo script avvia il twin dalla vostra cartella del Lab 2 (se e' gia' acceso lo
+Lo script avvia il twin dalla nostra cartella del Lab 2 (se e' gia' acceso lo
 ferma e lo riavvia, per partire da uno stato pulito) e attende la convergenza
-OSPF. Poi un monitor misura in continuo il traffico pca -> pcb e il next-hop
+OSPF. Poi un monitor misura in continuo il traffico pc_a -> pc_b e il next-hop
 di r1, mentre lo script abbatte un link di backbone e lo ripristina.
 
 Uso (dalla radice del repository):
-    python lab3-api/chaos.py                         # labs/lab2/mio-lab2, n12 giu' per 30 s
+    python lab3-api/chaos.py                         # labs/lab2/ospf, n12 giu' per 30 s
     python lab3-api/chaos.py --lab-dir labs/demo/soluzione-bfd --silent
     python lab3-api/chaos.py --link n23 --down 20
     python lab3-api/chaos.py --random --cycles 3     # link e durate casuali
@@ -24,8 +24,8 @@ import time
 from Kathara.manager.Kathara import Kathara
 from Kathara.parser.netkit.LabParser import LabParser
 
-TARGET = "192.168.20.10"  # pcb
-REQUIRED = {"r1", "r2", "r3", "r4", "pca", "pcb"}
+TARGET = "192.168.20.10"  # pc_b
+REQUIRED = {"r1", "r2", "r3", "r4", "pc_a", "pc_b"}
 
 # Link di backbone -> estremita' (dispositivo, interfaccia)
 LINKS = {
@@ -74,7 +74,7 @@ def load_twin(lab_dir):
     """Legge il lab dalla cartella e controlla che sia il backbone del Lab 2."""
     path = os.path.abspath(lab_dir)
     if not os.path.isfile(os.path.join(path, "lab.conf")):
-        raise SystemExit(f"Nessun lab.conf in {lab_dir}: indicate la cartella del vostro Lab 2 con --lab-dir")
+        raise SystemExit(f"Nessun lab.conf in {lab_dir}: indichiamo la cartella del nostro Lab 2 con --lab-dir")
     parsed = LabParser.parse(path)
     missing = REQUIRED - set(parsed.machines)
     if missing:
@@ -120,7 +120,7 @@ def wait_convergence(twin, timeout=120):
             break
         time.sleep(2)
     else:
-        logger.warning("Adiacenze incomplete dopo %d s: controllate la configurazione OSPF", timeout)
+        logger.warning("Adiacenze incomplete dopo %d s: controlliamo la configurazione OSPF", timeout)
 
     logger.info("Attendo che le tabelle di routing restino stabili per 5 s")
     tables = None
@@ -172,10 +172,10 @@ def monitor_route():
 
 
 def monitor_ping():
-    """Un ping al secondo da pca a pcb; ogni riga riporta anche il next-hop corrente."""
+    """Un ping al secondo da pc_a a pc_b; ogni riga riporta anche il next-hop corrente."""
     while not stop.is_set():
         sample_start = time.monotonic()
-        _, exit_code = run("pca", f"ping -c 1 -W 1 {TARGET}")
+        _, exit_code = run("pc_a", f"ping -c 1 -W 1 {TARGET}")
         state["sent"] += 1
         if exit_code != 0:
             state["lost"] += 1
@@ -207,8 +207,8 @@ def main():
 
     parser = argparse.ArgumentParser(description="Guasti programmati sul digital twin del Lab 2")
     target = parser.add_mutually_exclusive_group()
-    target.add_argument("--lab-dir", default="labs/lab2/mio-lab2",
-                        help="cartella del lab da avviare e mettere alla prova (default labs/lab2/mio-lab2)")
+    target.add_argument("--lab-dir", default="labs/lab2/ospf",
+                        help="cartella del lab da avviare e mettere alla prova (default labs/lab2/ospf)")
     target.add_argument("--lab-name", help="usa un twin gia' avviato con le API, es. garr-twin di build_twin.py")
     parser.add_argument("--link", choices=LINKS.keys(), default="n12", help="link da abbattere (default n12)")
     parser.add_argument("--down", type=float, help="durata del guasto in secondi (default 30, 60 con --silent)")

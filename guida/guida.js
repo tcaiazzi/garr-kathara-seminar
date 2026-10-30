@@ -10,12 +10,12 @@
 const CATEGORIE = [
   { id: "startup", titolo: "File di startup", test: /\.startup` file/, consiglio: "Il file deve chiamarsi esattamente &lt;dispositivo&gt;.startup ed essere nella cartella del lab." },
   { id: "topologia", titolo: "Topologia", test: /^Check existence of|collision domain/, consiglio: "Nomi dei dispositivi e dei domini in lab.conf devono coincidere con la traccia." },
-  { id: "indirizzi", titolo: "Indirizzi IP", test: /IP address/, consiglio: "Controllate gli <code>ip address add</code> nei file .startup: indirizzo, prefisso e interfaccia." },
-  { id: "demoni", titolo: "Demoni", test: /is (not )?running|daemon/i, consiglio: "Controllate il file daemons del router e che lo startup lanci <code>systemctl start frr</code>." },
+  { id: "indirizzi", titolo: "Indirizzi IP", test: /IP address/, consiglio: "Controlliamo gli <code>ip address add</code> nei file .startup: indirizzo, prefisso e interfaccia." },
+  { id: "demoni", titolo: "Demoni", test: /is (not )?running|daemon/i, consiglio: "Controlliamo il file daemons del router e che lo startup lanci <code>systemctl start frr</code>." },
   { id: "vicini", titolo: "Adiacenze OSPF", test: /^OSPF neighbor/, consiglio: "Istruzioni network che coprono le interfacce e tipo di rete punto-punto su entrambi i lati del link." },
-  { id: "interfacce", titolo: "Interfacce OSPF", test: /^OSPF interface/, consiglio: "Area, costo, punto-punto e LAN passive: confrontate con i vincoli della scheda." },
-  { id: "routing", titolo: "Tabelle di routing", test: /routing table/, consiglio: "<b>Partite da qui:</b> una rotta mancante o in più spiega quasi sempre i ping falliti." },
-  { id: "raggiungibilita", titolo: "Raggiungibilità", test: /reachable from/, consiglio: "Spesso è solo un sintomo: risolvete prima gli errori delle categorie sopra." },
+  { id: "interfacce", titolo: "Interfacce OSPF", test: /^OSPF interface/, consiglio: "Area, costo, punto-punto e LAN passive: confrontiamole con i vincoli della scheda." },
+  { id: "routing", titolo: "Tabelle di routing", test: /routing table/, consiglio: "<b>Partiamo da qui:</b> una rotta mancante o in più spiega quasi sempre i ping falliti." },
+  { id: "raggiungibilita", titolo: "Raggiungibilità", test: /reachable from/, consiglio: "Spesso è solo un sintomo: risolviamo prima gli errori delle categorie sopra." },
   { id: "comandi", titolo: "Controlli specifici", test: /output of the command|exit code of the command/, consiglio: "Controlli della traccia: per esempio la loopback o il percorso del traceroute." },
 ];
 const ALTRO = { id: "altro", titolo: "Altri controlli", consiglio: "" };
@@ -169,12 +169,16 @@ if (typeof document !== "undefined") {
     }, 1500);
   }
 
-  function bloccoCodice(testo, titolo) {
+  // Come nelle slide: «lab 1 /», «preparazione /»
+  const occhiello = (sezione) => `${sezione.titolo.toLowerCase()} /`;
+  const dueCifre = (n) => String(n).padStart(2, "0");
+
+  function bloccoCodice(testo, titolo, comando) {
     const bottone = el("button", { class: "copia", type: "button", testo: "Copia" });
     bottone.addEventListener("click", () => copia(testo, bottone));
     return el(
       "div",
-      { class: "codice" },
+      { class: comando ? "codice comando" : "codice" },
       titolo ? el("div", { class: "codice-titolo", testo: titolo }) : null,
       el("pre", {}, el("code", { testo: testo })),
       bottone
@@ -189,8 +193,8 @@ if (typeof document !== "undefined") {
     const zona = el(
       "label",
       { class: "zona-csv", for: "file-report" },
-      el("strong", { testo: "Trascinate qui il report del checker" }),
-      el("span", { testo: "oppure cliccate per sceglierlo: *_result_failed.csv o *_result_all.csv. Il file non lascia il vostro PC." }),
+      el("strong", { testo: "Trasciniamo qui il report del checker" }),
+      el("span", { testo: "oppure clicchiamo per sceglierlo: *_result_failed.csv o *_result_all.csv. Il file non lascia il nostro PC." }),
       input
     );
 
@@ -220,7 +224,7 @@ if (typeof document !== "undefined") {
     contenitore.append(el("p", { class: "report-file", testo: nome }));
 
     if (report.tipo === "sconosciuto") {
-      contenitore.append(el("p", { class: "avviso", testo: "Non riconosco questo file: usate uno dei CSV prodotti dal checker nella cartella del lab." }));
+      contenitore.append(el("p", { class: "avviso", testo: "Non riconosco questo file: usiamo uno dei CSV prodotti dal checker nella cartella del lab." }));
       return;
     }
     if (report.tipo === "riepilogo") {
@@ -265,7 +269,7 @@ if (typeof document !== "undefined") {
     const chiave = chiavePasso(sezione, passo);
     const sbloccati = stato.suggerimenti[chiave] || 0;
     const blocco = el("section", { class: "blocco" }, el("h3", { testo: "Suggerimenti" }));
-    blocco.append(el("p", { class: "nota", testo: "Si sbloccano uno alla volta. Provate prima da soli: la soluzione completa non c’è." }));
+    blocco.append(el("p", { class: "nota", testo: passo.notaSuggerimenti || "Si sbloccano uno alla volta. Proviamo prima da soli: la soluzione completa non c’è." }));
 
     passo.suggerimenti.forEach((s, i) => {
       if (i < sbloccati) {
@@ -294,7 +298,7 @@ if (typeof document !== "undefined") {
     const passo = sezione.passi[i];
     const art = el("article", { class: "passo" });
 
-    art.append(el("p", { class: "occhiello", testo: `${sezione.titolo} · passo ${i + 1} di ${sezione.passi.length}` }));
+    art.append(el("p", { class: "occhiello", testo: `${occhiello(sezione)} passo ${dueCifre(i + 1)} di ${dueCifre(sezione.passi.length)}` }));
     art.append(el("h2", { testo: passo.titolo }));
     for (const t of passo.testo || []) art.append(el("p", { html: t }));
 
@@ -322,7 +326,7 @@ if (typeof document !== "undefined") {
       if (passo.comandi.some((c) => typeof c !== "string")) {
         blocco.append(el("p", { class: "nota", testo: stato.os === "windows" ? "Comandi per Windows (PowerShell)." : "Comandi per Linux e macOS." }));
       }
-      for (const c of passo.comandi) blocco.append(bloccoCodice(testoComando(c)));
+      for (const c of passo.comandi) blocco.append(bloccoCodice(testoComando(c), null, true));
       art.append(blocco);
     }
 
@@ -338,7 +342,7 @@ if (typeof document !== "undefined") {
           )
         );
       }
-      art.append(el("section", { class: "blocco" }, el("h3", { testo: "Cosa dovreste vedere" }), figure));
+      art.append(el("section", { class: "blocco" }, el("h3", { testo: "Cosa dovremmo vedere" }), figure));
     }
 
     if (passo.vedere) art.append(el("p", { class: "vedere", html: passo.vedere }));
@@ -402,7 +406,7 @@ if (typeof document !== "undefined") {
       schede.append(
         el(
           "button",
-          { type: "button", class: s.id === sezione.id ? "scheda attiva" : "scheda", "aria-current": s.id === sezione.id ? "page" : "false", onclick: () => vai(s.id, stato.passo[s.id] || 0) },
+          { type: "button", class: s.id === sezione.id ? "scheda attiva" : "scheda", "data-sezione": s.id, "aria-current": s.id === sezione.id ? "page" : "false", onclick: () => vai(s.id, stato.passo[s.id] || 0) },
           el("span", { class: "scheda-titolo", testo: s.titolo }),
           el("span", { class: "barra" }, el("span", { style: `width:${(100 * n) / s.passi.length}%` })),
           el("span", { class: "scheda-conto", testo: `${n}/${s.passi.length}` })
@@ -412,7 +416,7 @@ if (typeof document !== "undefined") {
 
     // Elenco dei passi
     const elenco = $("#passi");
-    elenco.replaceChildren(el("p", { class: "sottotitolo", testo: sezione.sottotitolo }));
+    elenco.replaceChildren(el("p", { class: "occhiello", testo: occhiello(sezione) }), el("p", { class: "sottotitolo", testo: sezione.sottotitolo }));
     const ol = el("ol", {});
     sezione.passi.forEach((p, j) => {
       const fatto = stato.fatti[chiavePasso(sezione, p)];
@@ -423,7 +427,7 @@ if (typeof document !== "undefined") {
           el(
             "button",
             { type: "button", class: [j === i ? "attivo" : "", fatto ? "fatto" : ""].join(" ").trim(), onclick: () => vai(sezione.id, j) },
-            el("span", { class: "numero", testo: fatto ? "✓" : String(j + 1) }),
+            el("span", { class: "numero", testo: fatto ? "✓" : dueCifre(j + 1) }),
             el("span", { testo: p.titolo })
           )
         )
@@ -432,6 +436,8 @@ if (typeof document !== "undefined") {
     elenco.append(ol);
 
     $("#contenuto").replaceChildren(pannello(sezione, i));
+    document.body.dataset.sezione = sezione.id;
+    document.body.dataset.os = stato.os;
 
     for (const b of document.querySelectorAll("#os button")) b.setAttribute("aria-pressed", String(b.dataset.os === stato.os));
   }

@@ -5,8 +5,8 @@
 #       --lab labs/lab2/ospf-da-zero --no-cache --report-type csv
 
 lab_inline: |
-  pca[0]="lanA"
-  pcb[0]="lanB"
+  pc_a[0]="lanA"
+  pc_b[0]="lanB"
   r1[0]="lanA"
   r1[1]="n12"
   r1[2]="n41"
@@ -23,17 +23,17 @@ default_image: kathara/frr
 
 test:
   requiring_startup:
-    - pca
-    - pcb
+    - pc_a
+    - pc_b
     - r1
     - r2
     - r3
     - r4
 
   ip_mapping:
-    pca:
+    pc_a:
       "0": 192.168.10.10/24
-    pcb:
+    pc_b:
       "0": 192.168.20.10/24
     r1:
       "0": 192.168.10.1/24
@@ -55,8 +55,8 @@ test:
     r2: *router
     r3: *router
     r4: *router
-    pca: &host ["!ospfd"]
-    pcb: *host
+    pc_a: &host ["!ospfd"]
+    pc_b: *host
 
   protocols:
     ospfd:
@@ -100,9 +100,9 @@ test:
   # rotte, quindi vanno elencate tutte. Le /32 compaiono senza prefisso in
   # `ip route`. Il next-hop verifica il vincolo 3 (percorso primario via r2).
   kernel_routes:
-    pca:
+    pc_a:
       - ["0.0.0.0/0", ["192.168.10.1"]]
-    pcb:
+    pc_b:
       - ["0.0.0.0/0", ["192.168.20.1"]]
     r1:
       - ["192.168.20.0/24", ["10.0.0.2"]]
@@ -137,13 +137,13 @@ test:
 
   # Vincolo 4 e obiettivo del lab: loopback e sedi raggiungibili
   reachability:
-    pca:
+    pc_a:
       - 10.255.0.1
       - 10.255.0.2
       - 10.255.0.3
       - 10.255.0.4
       - 192.168.20.10
-    pcb:
+    pc_b:
       - 10.255.0.1
       - 10.255.0.2
       - 10.255.0.3
@@ -171,7 +171,7 @@ test:
     r4:
       - command: ip -4 addr show lo
         regex_match: "10\\.255\\.0\\.4/32"
-    pca:
+    pc_a:
       # Il secondo hop deve essere r2 (10.0.0.2): percorso primario
       - command: traceroute -n -q 1 -w 1 192.168.20.10
         regex_match: "(?m)^\\s*2\\s+10\\.0\\.0\\.2\\s"

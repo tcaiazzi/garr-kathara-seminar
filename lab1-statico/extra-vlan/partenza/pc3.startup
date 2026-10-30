@@ -1,0 +1,2 @@
+# pc3, VLAN 101: un indirizzo su eth0, senza gateway.
+# L'host non sa di essere in una VLAN.

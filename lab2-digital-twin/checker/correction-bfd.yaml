@@ -3,12 +3,12 @@
 #
 # Uso (dalla radice del repository):
 #   python3 -m kathara_lab_checker --config lab2-digital-twin/checker/correction-bfd.yaml \
-#       --lab labs/lab2/mio-lab2 --no-cache --report-type csv
+#       --lab labs/lab2/ospf --no-cache --report-type csv
 
 lab_inline: |
-  pca[0]="lanA"
-  pcb[0]="lanB"
-  pcc[0]="lanC"
+  pc_a[0]="lanA"
+  pc_b[0]="lanB"
+  pc_c[0]="lanC"
   r1[0]="lanA"
   r1[1]="n12"
   r1[2]="n41"
@@ -26,20 +26,20 @@ default_image: kathara/frr
 
 test:
   requiring_startup:
-    - pca
-    - pcb
-    - pcc
+    - pc_a
+    - pc_b
+    - pc_c
     - r1
     - r2
     - r3
     - r4
 
   ip_mapping:
-    pca:
+    pc_a:
       "0": 192.168.10.10/24
-    pcb:
+    pc_b:
       "0": 192.168.20.10/24
-    pcc:
+    pc_c:
       "0": 192.168.30.10/24    # CR-042
     r1:
       "0": 192.168.10.1/24
@@ -62,9 +62,9 @@ test:
     r2: *router
     r3: *router
     r4: *router
-    pca: &host ["!ospfd"]
-    pcb: *host
-    pcc: *host
+    pc_a: &host ["!ospfd"]
+    pc_b: *host
+    pc_c: *host
 
   protocols:
     ospfd:
@@ -109,11 +109,11 @@ test:
   # rotte, quindi vanno elencate tutte. Le /32 compaiono senza prefisso in
   # `ip route`. Rispetto alla produzione si aggiunge solo 192.168.30.0/24.
   kernel_routes:
-    pca:
+    pc_a:
       - ["0.0.0.0/0", ["192.168.10.1"]]
-    pcb:
+    pc_b:
       - ["0.0.0.0/0", ["192.168.20.1"]]
-    pcc:
+    pc_c:
       - ["0.0.0.0/0", ["192.168.30.1"]]
     r1:
       - ["192.168.20.0/24", ["10.0.0.2"]]
@@ -151,21 +151,21 @@ test:
 
   # Le tre sedi si raggiungono tutte; ogni router raggiunge le loopback
   reachability:
-    pca:
+    pc_a:
       - 10.255.0.1
       - 10.255.0.2
       - 10.255.0.3
       - 10.255.0.4
       - 192.168.20.10
       - 192.168.30.10
-    pcb:
+    pc_b:
       - 10.255.0.1
       - 10.255.0.2
       - 10.255.0.3
       - 10.255.0.4
       - 192.168.10.10
       - 192.168.30.10
-    pcc:
+    pc_c:
       - 10.255.0.1
       - 10.255.0.2
       - 10.255.0.3
@@ -212,11 +212,11 @@ test:
         regex_match: "10\\.0\\.0\\.9\\s+up"
       - command: vtysh -c "show bfd peers brief"
         regex_match: "10\\.0\\.0\\.14\\s+up"
-    pca:
+    pc_a:
       # Non regressione: tra sede A e sede B si passa ancora da r2 (10.0.0.2)
       - command: traceroute -n -q 1 -w 1 192.168.20.10
         regex_match: "(?m)^\\s*2\\s+10\\.0\\.0\\.2\\s"
-    pcc:
+    pc_c:
       # CR-042: dalla sede C si esce da r4 e si va direttamente verso la sede
       # di destinazione (r1 verso A, r3 verso B)
       - command: traceroute -n -q 1 -w 1 192.168.10.10
