@@ -10,18 +10,6 @@ Il corso prevede una introduzione a [Kathará](https://www.kathara.org/) e al su
 
 **Facoltativo**: Durante i laboratori apriamo nel browser [guida/index.html](guida/index.html) (basta un doppio clic, funziona anche offline). La guida ci accompagna passo per passo: comandi da copiare per il nostro sistema operativo, schermate di cosa dovremmo vedere, suggerimenti e un lettore dei report del checker. L'avanzamento resta salvato nel browser.
 
-## Programma
-
-| Tempo | Attività | Materiali |
-|---|---|---|
-| 40' | Introduzione a Kathará: architettura, `lab.conf`, startup, comandi principali, progetti, checker | — |
-| 25' | **Lab 1** — Warmup: rotte statiche | [lab1-statico/TRACCIA.md](lab1-statico/TRACCIA.md) |
-| 10' | Pausa | |
-| 50' | **Lab 2** — Digital twin di una rete OSPF | [lab2-digital-twin/TRACCIA.md](lab2-digital-twin/TRACCIA.md) |
-| 35' | **Lab 3** — Il twin diventa codice: API Python e guasti programmati | [lab3-api/README.md](lab3-api/README.md) |
-| 10' | Conclusioni e domande | — |
-| 10' | Margine per imprevisti | |
-
 ## I lab
 
 1. **Lab 1 — Rotte statiche.** Quattro dispositivi in linea da creare da zero. Per chi finisce prima c'è un esercizio facoltativo con due VLAN tra le sedi, in `lab1-statico/extra-vlan/`.
