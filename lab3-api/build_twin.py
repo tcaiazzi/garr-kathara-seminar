@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Lab 3 - Costruisce da codice il digital twin del Lab 2 e lo avvia.
 
-Uso:
-    python3 build_twin.py            # crea e avvia il twin
-    python3 build_twin.py --bfd      # come sopra, con BFD sui link di backbone
-    python3 build_twin.py --destroy  # ferma il twin
+Uso (dalla radice del repository):
+    python lab3-api/build_twin.py            # crea e avvia il twin
+    python lab3-api/build_twin.py --bfd      # come sopra, con BFD sui link di backbone
+    python lab3-api/build_twin.py --destroy  # ferma il twin
 """
 import argparse
 import ipaddress

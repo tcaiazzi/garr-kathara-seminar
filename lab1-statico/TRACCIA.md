@@ -127,6 +127,7 @@ Correggiamo, rilanciamo il checker e ripetiamo finché tutti i test passano.
 - **Maiuscole nei nomi**: Kathará non accetta `pcA` come nome di dispositivo; `lstart` segnala un errore in `lab.conf`.
 - **Interfacce con buchi**: `r1[0]`, `r1[1]`, …: la numerazione parte da 0 e non salta numeri.
 - **Modifiche nei container**: quello che digitiamo in un terminale sparisce al riavvio; correggiamo i file `.startup`.
+- **macOS, VS Code: i terminali dei dispositivi non si aprono**: macOS non lascia a VS Code il controllo dell'app Terminale. Lanciamo i comandi di Kathará da un terminale esterno, oppure diamo il permesso a VS Code seguendo [setup/INSTALL.md](../setup/INSTALL.md#macos-vs-code-e-i-terminali-dei-dispositivi).
 - **Rotta verso un indirizzo**: `ip route add` vuole la rete (192.168.2.0/24); il next-hop è un vicino diretto.
 - **Rotta di ritorno dimenticata**: il ping funziona solo se anche r2 sa tornare verso 192.168.1.0/24.
 

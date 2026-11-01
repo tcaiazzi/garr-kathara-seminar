@@ -8,7 +8,7 @@ di r1, mentre lo script abbatte un link di backbone e lo ripristina.
 
 Uso (dalla radice del repository):
     python lab3-api/chaos.py                         # labs/lab2/ospf, n12 giu' per 30 s
-    python lab3-api/chaos.py --lab-dir labs/demo/soluzione-bfd --silent
+    python lab3-api/chaos.py --lab-dir lab2-digital-twin/soluzione-bfd --silent
     python lab3-api/chaos.py --link n23 --down 20
     python lab3-api/chaos.py --random --cycles 3     # link e durate casuali
 """

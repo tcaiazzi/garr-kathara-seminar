@@ -268,9 +268,9 @@ La soluzione passa 143 test su 143. La produzione così com'è ne passa 120 su 1
 
 ---
 
-## Extra per casa: BFD sul backbone
+## Extra per casa: BFD nella rete OSPF
 
-La seconda change request, BFD su tutti i link di backbone, è l'extra per casa alla fine del Lab 3: lì possiamo anche misurarne l'effetto con `chaos.py`. La traccia è in [lab3-api/README.md](../lab3-api/README.md#extra-per-casa--bfd-sul-backbone).
+La seconda change request, BFD su tutti i link di backbone, è l'extra per casa alla fine del Lab 3: lì possiamo anche misurarne l'effetto con `chaos.py`. La traccia è in [lab3-api/README.md](../lab3-api/README.md#extra-per-casa--bfd-nella-rete-ospf).
 
 ---
 

@@ -6,7 +6,7 @@ Nei primi due lab il twin era una cartella di file, gestita a mano con `kathara 
 |---|---|
 | A · Il nostro primo lab con le API | 15' |
 | B · Testiamo la nostra rete OSPF | 20' |
-| Extra per casa · BFD sul backbone | — |
+| Extra per casa · BFD nella rete OSPF | — |
 
 ## Prerequisiti
 
@@ -154,7 +154,7 @@ kathara lclean -d labs/lab2/ospf
 
 ---
 
-## Extra per casa · BFD sul backbone
+## Extra per casa · BFD nella rete OSPF
 
 Facoltativo, da fare a casa (o in aula, se avanza tempo). Come risolviamo il problema del guasto silenzioso?
 

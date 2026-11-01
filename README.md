@@ -23,8 +23,9 @@ Il corso prevede una introduzione a [Kathará](https://www.kathara.org/) e al su
 setup/              guida di installazione e script di verifica del PC
 guida/              guida interattiva ai laboratori (pagina statica, si apre nel browser)
 lab1-statico/       traccia, soluzione e configurazione del checker del Lab 1
-lab2-digital-twin/  traccia, rete di produzione, soluzioni (CR-042 e BFD), checker ed esercizio extra su BFD
-lab3-api/           script Python del Lab 3
+lab2-digital-twin/  traccia, rete di produzione, soluzioni (CR-042 e BFD), checker ed esercizio extra su OSPF da zero
+lab3-api/           script Python del Lab 3 e traccia dell'extra su BFD
+labs/               le nostre copie di lavoro dei lab (la creiamo seguendo le tracce)
 requirements.txt    pacchetti Python per tutto il seminario
 ```
 

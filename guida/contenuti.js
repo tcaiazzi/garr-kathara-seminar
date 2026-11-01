@@ -268,6 +268,7 @@ const GUIDA = [
         vedere: "Le barre arrivano a 3/3 e 4/4: tutti i domini e tutti i dispositivi sono partiti.",
         problemi: [
           "<b>Modifiche nei container</b>: quello che digitiamo in un terminale sparisce al riavvio. Correggiamo i file .startup e usiamo <code>kathara lrestart -d labs/lab1/static-routing</code>.",
+          "<b>macOS, VS Code: i terminali dei dispositivi non si aprono</b>: macOS non lascia a VS Code il controllo dell’app Terminale. La via più semplice è lanciare i comandi di Kathará da un terminale esterno. Per usare il terminale integrato: dall’app Terminale (non da VS Code) <code>tccutil reset AppleEvents com.microsoft.VSCode</code>; chiudiamo VS Code con Cmd+Q e riapriamolo; dal terminale integrato <code>osascript -e 'tell application \"Terminal\" to do script \"echo ok\"'</code> e al popup «Visual Studio Code vuole controllare Terminal» clicchiamo OK. Dettagli in setup/INSTALL.md.",
         ],
       },
       {
@@ -303,6 +304,7 @@ const GUIDA = [
           "Trasciniamo il report dei falliti qui sotto per vederlo ordinato per tipo di errore. Correggiamo, rilanciamo il checker, ripetiamo finché tutti i test passano.",
         ],
         immagini: [{ src: "img/l1-report.png", alt: "Contenuto di static-routing_result_failed.csv" }],
+        vedere: "Tutti i test passano? Per chi finisce prima c’è un esercizio facoltativo nella scheda <b>Extra · VLAN</b>.",
         lettoreCsv: true,
       },
       {
@@ -319,90 +321,6 @@ const GUIDA = [
           "il dispositivo sta sul dominio da osservare (qui <code>lanA</code>), con <code>bridged</code> attivo e la porta 3000 esposta sull’host;",
           "apriamo la GUI nel browser: <code>http://localhost:3000</code>;",
           "scegliamo l’interfaccia: <code>eth0</code> è il dominio <code>lanA</code>, <code>eth1</code> è collegata alla rete bridged di Docker.",
-        ],
-      },
-      {
-        id: "vlan",
-        titolo: "Extra: due VLAN tra le sedi",
-        testo: [
-          "<b>Facoltativo</b>, per chi ha finito o da fare a casa. Quattro computer, ognuno su una <b>porta dedicata</b> dello switch della sua sede: pc1 e pc4 su s1, pc2 e pc3 su s2.",
-          "La <b>VLAN 100</b> unisce i computer pari (pc2, pc4), la <b>VLAN 101</b> i dispari (pc1, pc3). Ogni VLAN attraversa le sedi su un <b>trunk</b> 802.1Q sul link n12.",
-          "Come nelle reti reali, <b>gli host non sanno di essere in una VLAN</b>: hanno solo un indirizzo su eth0, senza gateway. Lo switch decide la VLAN dalla porta su cui arriva il frame (porta di <b>accesso</b>) e aggiunge il tag sul trunk. Solo livello 2: al posto dei router del Lab 1 ci sono due switch, s1 e s2, senza indirizzi e senza rotte.",
-          "Partiamo dal template <code>lab1-statico/extra-vlan/partenza/</code>: <code>lab.conf</code> è già completo e non va modificato; completiamo i sei file <code>.startup</code>, che per ora contengono solo un commento.",
-        ],
-        topologia: TOPOLOGIA_LAB1_VLAN,
-        tabella: {
-          intestazione: ["Dispositivo", "Interfaccia", "Dominio", "Ruolo", "VLAN", "Indirizzo"],
-          righe: [
-            ["pc1", "eth0", "lan1", "host", "101", "10.101.0.1/24"],
-            ["pc4", "eth0", "lan4", "host", "100", "10.100.0.4/24"],
-            ["pc2", "eth0", "lan2", "host", "100", "10.100.0.2/24"],
-            ["pc3", "eth0", "lan3", "host", "101", "10.101.0.3/24"],
-            ["s1", "eth0", "lan1", "accesso", "101", "—"],
-            ["s1", "eth1", "n12", "trunk", "100, 101", "—"],
-            ["s1", "eth2", "lan4", "accesso", "100", "—"],
-            ["s2", "eth0", "n12", "trunk", "100, 101", "—"],
-            ["s2", "eth1", "lan2", "accesso", "100", "—"],
-            ["s2", "eth2", "lan3", "accesso", "101", "—"],
-          ],
-        },
-        comandi: [
-          { unix: "mkdir -p labs/lab1", windows: "New-Item -ItemType Directory -Force labs\\lab1" },
-          { unix: "cp -r lab1-statico/extra-vlan/partenza labs/lab1/vlan", windows: "Copy-Item -Recurse lab1-statico\\extra-vlan\\partenza labs\\lab1\\vlan" },
-        ],
-        suggerimenti: [
-          {
-            titolo: "Suggerimento 1 · l’host non sa niente",
-            html: "<p>Su un host basta un indirizzo su <code>eth0</code>, come se la VLAN non esistesse. Niente sottointerfacce e niente gateway.</p>",
-            codice: "ip address add 10.101.0.1/24 dev eth0",
-          },
-          {
-            titolo: "Suggerimento 2 · il bridge su uno switch",
-            html: "<p>Per ogni VLAN: una sottointerfaccia sul trunk e un bridge senza indirizzi che la unisce alla porta di accesso. La porta di accesso entra nel bridge così com’è: tutto ciò che arriva da lì appartiene a quella VLAN. Sottointerfacce e bridge nascono spenti. Su s1 il trunk è eth1, su s2 è eth0.</p>",
-            codice: "# s1, VLAN 101: porta di accesso eth0, trunk eth1\nip link add link eth1 name eth1.101 type vlan id 101\nip link add br101 type bridge\nip link set eth0 master br101\nip link set eth1.101 master br101\nip link set eth1.101 up\nip link set br101 up",
-          },
-          {
-            titolo: "Suggerimento 3 · la configurazione completa di s1",
-            html: "<p><code>s1.startup</code>: porte di accesso <code>eth0</code> (pc1, VLAN 101) ed <code>eth2</code> (pc4, VLAN 100), trunk <code>eth1</code>. Nessun indirizzo IP.</p>",
-            codice: "# VLAN 101: porta di accesso eth0 (pc1) + trunk eth1, taggato 101\nip link add link eth1 name eth1.101 type vlan id 101\nip link add br101 type bridge\nip link set eth0 master br101\nip link set eth1.101 master br101\nip link set eth1.101 up\nip link set br101 up\n\n# VLAN 100: porta di accesso eth2 (pc4) + trunk eth1, taggato 100\nip link add link eth1 name eth1.100 type vlan id 100\nip link add br100 type bridge\nip link set eth2 master br100\nip link set eth1.100 master br100\nip link set eth1.100 up\nip link set br100 up",
-          },
-          {
-            titolo: "Suggerimento 4 · la configurazione completa di s2",
-            html: "<p><code>s2.startup</code>: porte di accesso <code>eth1</code> (pc2, VLAN 100) ed <code>eth2</code> (pc3, VLAN 101), trunk <code>eth0</code>. Nessun indirizzo IP.</p>",
-            codice: "# VLAN 100: porta di accesso eth1 (pc2) + trunk eth0, taggato 100\nip link add link eth0 name eth0.100 type vlan id 100\nip link add br100 type bridge\nip link set eth1 master br100\nip link set eth0.100 master br100\nip link set eth0.100 up\nip link set br100 up\n\n# VLAN 101: porta di accesso eth2 (pc3) + trunk eth0, taggato 101\nip link add link eth0 name eth0.101 type vlan id 101\nip link add br101 type bridge\nip link set eth2 master br101\nip link set eth0.101 master br101\nip link set eth0.101 up\nip link set br101 up",
-          },
-        ],
-        notaSuggerimenti: "Si sbloccano uno alla volta. Proviamo prima da soli: gli ultimi due contengono la configurazione completa dei router.",
-        problemi: [
-          "<b>Un dispositivo non compare</b>: dopo aver modificato <code>lab.conf</code> serve <code>kathara lrestart -d labs/lab1/vlan</code>.",
-          "<b>La sottointerfaccia non inoltra</b>: è rimasta spenta; anche il bridge va portato su.",
-          "<b>Indirizzo IP sulla porta dello switch</b>: non serve, una porta dentro un bridge non lo usa. Gli switch lavorano solo a livello 2.",
-        ],
-      },
-      {
-        id: "vlan-verifica",
-        titolo: "Extra: verifichiamo le VLAN",
-        testo: [
-          "Avviamo il lab dalla radice del repository. I ping dentro ogni VLAN devono passare tra le sedi; con <code>bridge link</code> vediamo quali porte sono in ogni bridge.",
-          "Poi cerchiamo il tag: lasciamo un ping da pc1 a pc3 in un terminale (<code>kathara exec -d labs/lab1/vlan pc1 \"ping 10.101.0.3\"</code>) e in un altro catturiamo su s1, prima sulla porta di accesso e poi sul trunk.",
-        ],
-        comandi: [
-          "kathara lstart -d labs/lab1/vlan",
-          "kathara exec -d labs/lab1/vlan pc1 \"ping -c 3 10.101.0.3\"",
-          "kathara exec -d labs/lab1/vlan pc4 \"ping -c 3 10.100.0.2\"",
-          "kathara exec -d labs/lab1/vlan s1 \"bridge link\"",
-          "kathara exec -d labs/lab1/vlan s1 \"tcpdump -e -n -c 2 -i eth0 icmp\"",
-          "kathara exec -d labs/lab1/vlan s1 \"tcpdump -e -n -c 2 -i eth1 icmp\"",
-          "kathara lclean -d labs/lab1/vlan",
-          CHECKER_VLAN,
-        ],
-        immagini: [{ src: "img/l1x-tcpdump.png", alt: "tcpdump su s1 durante un ping da pc1 a pc3: su eth0 i frame senza tag, su eth1 gli stessi frame con 802.1Q vlan 101" }],
-        vedere: "Su <code>eth0</code>, la porta di pc1, i frame passano <b>senza tag</b>; su <code>eth1</code>, il trunk, gli stessi frame hanno <b>802.1Q vlan 101</b>: il tag lo mette lo switch. pc4 non vede nulla, perché è su un’altra LAN e in un’altra VLAN. La soluzione passa 42 test su 42 (il template di partenza così com’è ne passa 22, solo la topologia); è in <code>lab1-statico/extra-vlan/soluzione/</code>.",
-        lettoreCsv: true,
-        problemi: [
-          "<b>Il ping dentro la VLAN non passa</b>: VLAN id diverso tra s1 e s2 sul trunk, o una sottointerfaccia non agganciata al bridge.",
-          "<b>pc4 non raggiunge pc2</b>: la sua porta di accesso è nel bridge sbagliato (per esempio eth2 di s1 in br101).",
-          "<b>Funziona solo da una parte</b>: le VLAN vanno configurate sia su s1 sia su s2, sulla porta di accesso e sul trunk.",
         ],
       },
     ],
@@ -664,11 +582,109 @@ const GUIDA = [
           "Quali altri test automatizzereste sul twin prima di ogni change?",
         ],
         comandi: ["kathara lclean -d labs/lab2/ospf"],
-        vedere: "Alla fine fermiamo il twin con il comando qui sopra. Per approfondire: <code>lab3-api/build_twin.py</code> costruisce la rete di produzione generando le configurazioni FRR dai dati (vedi il README del Lab 3).",
+        vedere: "Alla fine fermiamo il twin con il comando qui sopra. Per approfondire: <code>lab3-api/build_twin.py</code> costruisce la rete di produzione generando le configurazioni FRR dai dati (vedi il README del Lab 3). Per casa: come risolvere il guasto silenzioso con BFD, nella scheda <b>Extra · BFD</b>.",
+      },
+    ],
+  },
+  {
+    id: "extra-vlan",
+    titolo: "Extra · VLAN",
+    sottotitolo: "Dopo il Lab 1: due VLAN tra le sedi · facoltativo",
+    passi: [
+      {
+        id: "vlan",
+        titolo: "Due VLAN tra le sedi",
+        testo: [
+          "<b>Facoltativo</b>, per chi ha finito o da fare a casa. Quattro computer, ognuno su una <b>porta dedicata</b> dello switch della sua sede: pc1 e pc4 su s1, pc2 e pc3 su s2.",
+          "La <b>VLAN 100</b> unisce i computer pari (pc2, pc4), la <b>VLAN 101</b> i dispari (pc1, pc3). Ogni VLAN attraversa le sedi su un <b>trunk</b> 802.1Q sul link n12.",
+          "Come nelle reti reali, <b>gli host non sanno di essere in una VLAN</b>: hanno solo un indirizzo su eth0, senza gateway. Lo switch decide la VLAN dalla porta su cui arriva il frame (porta di <b>accesso</b>) e aggiunge il tag sul trunk. Solo livello 2: al posto dei router del Lab 1 ci sono due switch, s1 e s2, senza indirizzi e senza rotte.",
+          "Partiamo dal template <code>lab1-statico/extra-vlan/partenza/</code>: <code>lab.conf</code> è già completo e non va modificato; completiamo i sei file <code>.startup</code>, che per ora contengono solo un commento.",
+        ],
+        topologia: TOPOLOGIA_LAB1_VLAN,
+        tabella: {
+          intestazione: ["Dispositivo", "Interfaccia", "Dominio", "Ruolo", "VLAN", "Indirizzo"],
+          righe: [
+            ["pc1", "eth0", "lan1", "host", "101", "10.101.0.1/24"],
+            ["pc4", "eth0", "lan4", "host", "100", "10.100.0.4/24"],
+            ["pc2", "eth0", "lan2", "host", "100", "10.100.0.2/24"],
+            ["pc3", "eth0", "lan3", "host", "101", "10.101.0.3/24"],
+            ["s1", "eth0", "lan1", "accesso", "101", "—"],
+            ["s1", "eth1", "n12", "trunk", "100, 101", "—"],
+            ["s1", "eth2", "lan4", "accesso", "100", "—"],
+            ["s2", "eth0", "n12", "trunk", "100, 101", "—"],
+            ["s2", "eth1", "lan2", "accesso", "100", "—"],
+            ["s2", "eth2", "lan3", "accesso", "101", "—"],
+          ],
+        },
+        comandi: [
+          { unix: "mkdir -p labs/lab1", windows: "New-Item -ItemType Directory -Force labs\\lab1" },
+          { unix: "cp -r lab1-statico/extra-vlan/partenza labs/lab1/vlan", windows: "Copy-Item -Recurse lab1-statico\\extra-vlan\\partenza labs\\lab1\\vlan" },
+        ],
+        suggerimenti: [
+          {
+            titolo: "Suggerimento 1 · l’host non sa niente",
+            html: "<p>Su un host basta un indirizzo su <code>eth0</code>, come se la VLAN non esistesse. Niente sottointerfacce e niente gateway.</p>",
+            codice: "ip address add 10.101.0.1/24 dev eth0",
+          },
+          {
+            titolo: "Suggerimento 2 · il bridge su uno switch",
+            html: "<p>Per ogni VLAN: una sottointerfaccia sul trunk e un bridge senza indirizzi che la unisce alla porta di accesso. La porta di accesso entra nel bridge così com’è: tutto ciò che arriva da lì appartiene a quella VLAN. Sottointerfacce e bridge nascono spenti. Su s1 il trunk è eth1, su s2 è eth0.</p>",
+            codice: "# s1, VLAN 101: porta di accesso eth0, trunk eth1\nip link add link eth1 name eth1.101 type vlan id 101\nip link add br101 type bridge\nip link set eth0 master br101\nip link set eth1.101 master br101\nip link set eth1.101 up\nip link set br101 up",
+          },
+          {
+            titolo: "Suggerimento 3 · la configurazione completa di s1",
+            html: "<p><code>s1.startup</code>: porte di accesso <code>eth0</code> (pc1, VLAN 101) ed <code>eth2</code> (pc4, VLAN 100), trunk <code>eth1</code>. Nessun indirizzo IP.</p>",
+            codice: "# VLAN 101: porta di accesso eth0 (pc1) + trunk eth1, taggato 101\nip link add link eth1 name eth1.101 type vlan id 101\nip link add br101 type bridge\nip link set eth0 master br101\nip link set eth1.101 master br101\nip link set eth1.101 up\nip link set br101 up\n\n# VLAN 100: porta di accesso eth2 (pc4) + trunk eth1, taggato 100\nip link add link eth1 name eth1.100 type vlan id 100\nip link add br100 type bridge\nip link set eth2 master br100\nip link set eth1.100 master br100\nip link set eth1.100 up\nip link set br100 up",
+          },
+          {
+            titolo: "Suggerimento 4 · la configurazione completa di s2",
+            html: "<p><code>s2.startup</code>: porte di accesso <code>eth1</code> (pc2, VLAN 100) ed <code>eth2</code> (pc3, VLAN 101), trunk <code>eth0</code>. Nessun indirizzo IP.</p>",
+            codice: "# VLAN 100: porta di accesso eth1 (pc2) + trunk eth0, taggato 100\nip link add link eth0 name eth0.100 type vlan id 100\nip link add br100 type bridge\nip link set eth1 master br100\nip link set eth0.100 master br100\nip link set eth0.100 up\nip link set br100 up\n\n# VLAN 101: porta di accesso eth2 (pc3) + trunk eth0, taggato 101\nip link add link eth0 name eth0.101 type vlan id 101\nip link add br101 type bridge\nip link set eth2 master br101\nip link set eth0.101 master br101\nip link set eth0.101 up\nip link set br101 up",
+          },
+        ],
+        notaSuggerimenti: "Si sbloccano uno alla volta. Proviamo prima da soli: gli ultimi due contengono la configurazione completa dei router.",
+        problemi: [
+          "<b>Un dispositivo non compare</b>: dopo aver modificato <code>lab.conf</code> serve <code>kathara lrestart -d labs/lab1/vlan</code>.",
+          "<b>La sottointerfaccia non inoltra</b>: è rimasta spenta; anche il bridge va portato su.",
+          "<b>Indirizzo IP sulla porta dello switch</b>: non serve, una porta dentro un bridge non lo usa. Gli switch lavorano solo a livello 2.",
+        ],
       },
       {
+        id: "vlan-verifica",
+        titolo: "Verifichiamo le VLAN",
+        testo: [
+          "Avviamo il lab dalla radice del repository. I ping dentro ogni VLAN devono passare tra le sedi; con <code>bridge link</code> vediamo quali porte sono in ogni bridge.",
+          "Poi cerchiamo il tag: lasciamo un ping da pc1 a pc3 in un terminale (<code>kathara exec -d labs/lab1/vlan pc1 \"ping 10.101.0.3\"</code>) e in un altro catturiamo su s1, prima sulla porta di accesso e poi sul trunk.",
+        ],
+        comandi: [
+          "kathara lstart -d labs/lab1/vlan",
+          "kathara exec -d labs/lab1/vlan pc1 \"ping -c 3 10.101.0.3\"",
+          "kathara exec -d labs/lab1/vlan pc4 \"ping -c 3 10.100.0.2\"",
+          "kathara exec -d labs/lab1/vlan s1 \"bridge link\"",
+          "kathara exec -d labs/lab1/vlan s1 \"tcpdump -e -n -c 2 -i eth0 icmp\"",
+          "kathara exec -d labs/lab1/vlan s1 \"tcpdump -e -n -c 2 -i eth1 icmp\"",
+          "kathara lclean -d labs/lab1/vlan",
+          CHECKER_VLAN,
+        ],
+        immagini: [{ src: "img/l1x-tcpdump.png", alt: "tcpdump su s1 durante un ping da pc1 a pc3: su eth0 i frame senza tag, su eth1 gli stessi frame con 802.1Q vlan 101" }],
+        vedere: "Su <code>eth0</code>, la porta di pc1, i frame passano <b>senza tag</b>; su <code>eth1</code>, il trunk, gli stessi frame hanno <b>802.1Q vlan 101</b>: il tag lo mette lo switch. pc4 non vede nulla, perché è su un’altra LAN e in un’altra VLAN. La soluzione passa 42 test su 42 (il template di partenza così com’è ne passa 22, solo la topologia); è in <code>lab1-statico/extra-vlan/soluzione/</code>.",
+        lettoreCsv: true,
+        problemi: [
+          "<b>Il ping dentro la VLAN non passa</b>: VLAN id diverso tra s1 e s2 sul trunk, o una sottointerfaccia non agganciata al bridge.",
+          "<b>pc4 non raggiunge pc2</b>: la sua porta di accesso è nel bridge sbagliato (per esempio eth2 di s1 in br101).",
+          "<b>Funziona solo da una parte</b>: le VLAN vanno configurate sia su s1 sia su s2, sulla porta di accesso e sul trunk.",
+        ],
+      },
+    ],
+  },
+  {
+    id: "extra-bfd",
+    titolo: "Extra · BFD",
+    sottotitolo: "Dopo il Lab 3: BFD nella rete OSPF · per casa",
+    passi: [
+      {
         id: "bfd",
-        titolo: "Extra per casa: BFD",
+        titolo: "BFD nella rete OSPF",
         testo: [
           "<b>Facoltativo</b>, da fare a casa (o in aula, se avanza tempo). Come risolviamo il problema del guasto silenzioso? Su alcune fibre un guasto lascia l’interfaccia up ma il traffico non passa: OSPF se ne accorge solo allo scadere del dead interval, <b>40 secondi di traffico perso</b>.",
           "<b>BFD</b> (Bidirectional Forwarding Detection, RFC 5880) è una sessione di hello leggeri tra due vicini, che non trasporta informazioni di routing. Con i default di FRR ogni peer manda un pacchetto ogni 300 ms; se ne mancano 3 consecutivi il link è dichiarato giù, in meno di un secondo. BFD avvisa subito OSPF, che riconverge senza aspettare il dead interval.",

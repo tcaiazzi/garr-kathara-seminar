@@ -1,7 +1,8 @@
 /* Guida ai laboratori: stile del deck del seminario (kathara-workshop-garr.pptx).
    Fondo bianco, IBM Plex Sans e JetBrains Mono, una barra laterale colorata per
    sezione come nelle slide: grafite per la preparazione, verde per il Lab 1,
-   corallo per il Lab 2, giallo per il Lab 3. */
+   corallo per il Lab 2, giallo per il Lab 3. Le schede degli esercizi extra
+   riprendono il colore del lab da cui partono. */
 
 @font-face { font-family: "IBM Plex Sans"; font-weight: 400; font-display: swap; src: url("font/ibm-plex-sans-latin-400-normal.woff2") format("woff2"); }
 @font-face { font-family: "IBM Plex Sans"; font-weight: 600; font-display: swap; src: url("font/ibm-plex-sans-latin-600-normal.woff2") format("woff2"); }
@@ -65,6 +66,8 @@
 body[data-sezione="lab1"] { --accent: var(--lime); --accent-ink: var(--green); }
 body[data-sezione="lab2"] { --accent: var(--coral); --accent-ink: var(--rust); }
 body[data-sezione="lab3"] { --accent: var(--yellow); --accent-ink: var(--gold); }
+body[data-sezione="extra-vlan"] { --accent: var(--lime); --accent-ink: var(--green); }
+body[data-sezione="extra-bfd"] { --accent: var(--yellow); --accent-ink: var(--gold); }
 
 * { box-sizing: border-box; }
 
@@ -150,7 +153,7 @@ button { font: inherit; cursor: pointer; }
 
 .schede {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 12px;
   padding: 16px 40px;
   border-bottom: 1px solid var(--line);
@@ -171,6 +174,8 @@ button { font: inherit; cursor: pointer; }
 .scheda[data-sezione="lab1"] { --tab: var(--lime); }
 .scheda[data-sezione="lab2"] { --tab: var(--coral); }
 .scheda[data-sezione="lab3"] { --tab: var(--yellow); }
+.scheda[data-sezione="extra-vlan"] { --tab: var(--lime); }
+.scheda[data-sezione="extra-bfd"] { --tab: var(--yellow); }
 .scheda:hover { background: var(--panel); }
 .scheda.attiva { background: var(--tint); border-color: var(--line-strong); border-left-color: var(--tab); }
 .scheda-titolo { font-weight: 700; }
@@ -398,6 +403,10 @@ figcaption { margin-top: 6px; font-family: var(--mono); font-size: 13px; color: 
 .secondario:disabled { opacity: 0.4; cursor: default; }
 
 button:focus-visible, .zona-csv:focus-within { outline: 3px solid var(--sky); outline-offset: 2px; }
+
+@media (max-width: 1200px) {
+  .schede { grid-template-columns: repeat(3, 1fr); }
+}
 
 /* --- Schermi stretti ------------------------------------------------------ */
 

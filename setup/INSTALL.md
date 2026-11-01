@@ -77,3 +77,26 @@ python setup/verifica.py
 ```
 
 Lo script controlla Python, i pacchetti, Docker, le immagini e avvia un mini-lab di prova. Per ogni voce marcata `KO` stampa l'indicazione per correggerla.
+
+## macOS: VS Code e i terminali dei dispositivi
+
+Su macOS, se lanciamo `kathara lstart` dal terminale integrato di VS Code, i terminali dei dispositivi possono non aprirsi. Non è un problema di Kathará ma di permessi: macOS non permette a VS Code di controllare l'app Terminale finché non gliene diamo il permesso.
+
+**Soluzione rapida**: lanciamo i comandi di Kathará da un terminale esterno (l'app Terminale), sempre dalla radice del repository e con il virtualenv attivo.
+
+Per usare invece il terminale integrato di VS Code, diamogli il permesso una volta sola:
+
+1. Dall'app Terminale (**non** da VS Code) azzeriamo i permessi di Automazione di VS Code:
+
+   ```
+   tccutil reset AppleEvents com.microsoft.VSCode
+   ```
+
+2. Chiudiamo VS Code del tutto con **Cmd+Q** e riapriamolo.
+3. Dal terminale integrato di VS Code facciamo comparire la richiesta con un comando minimo:
+
+   ```
+   osascript -e 'tell application "Terminal" to do script "echo ok"'
+   ```
+
+   Compare il popup «Visual Studio Code vuole controllare Terminal»: clicchiamo **OK**. Da quel momento Terminal compare sotto VS Code in *Impostazioni di Sistema → Privacy e sicurezza → Automazione*, e `kathara lstart` funziona anche dal terminale integrato.
