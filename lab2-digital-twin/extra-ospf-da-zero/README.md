@@ -1,6 +1,6 @@
 # Lab 2, esercizio extra — Configurare OSPF da zero
 
-> Esercizio facoltativo, fuori dal flusso del seminario. Nel Lab 2 la rete di produzione è già configurata e applichiamo una change request (vedi `../TRACCIA.md`); qui invece scriviamo la configurazione OSPF partendo da uno scheletro.
+> Esercizio facoltativo, fuori dal flusso del seminario. Nel Lab 2 la rete di produzione è già configurata e applichiamo una change request (vedi [`../README.md`](../README.md)); qui invece scriviamo la configurazione OSPF partendo da uno scheletro.
 
 ## Lo scenario
 

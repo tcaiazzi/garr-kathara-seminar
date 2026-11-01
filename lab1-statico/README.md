@@ -153,4 +153,4 @@ wireshark[0]="lanA"
 
 ## Per chi finisce prima: due VLAN tra le sedi
 
-Esercizio facoltativo, anche da fare a casa: quattro computer, ognuno su una porta dedicata di uno dei due switch s1 e s2, e due VLAN che attraversano le sedi su un trunk tra s1 e s2, la 100 per i computer pari e la 101 per i dispari. Gli host non sanno di essere in una VLAN: il tag lo mette lo switch. Solo livello 2, senza indirizzi sugli switch e senza rotte. Traccia, soluzione e checker sono in [extra-vlan/](extra-vlan/TRACCIA.md).
+Esercizio facoltativo, anche da fare a casa: quattro computer, ognuno su una porta dedicata di uno dei due switch s1 e s2, e due VLAN che attraversano le sedi su un trunk tra s1 e s2, la 100 per i computer pari e la 101 per i dispari. Gli host non sanno di essere in una VLAN: il tag lo mette lo switch. Solo livello 2, senza indirizzi sugli switch e senza rotte. Traccia, soluzione e checker sono in [extra-vlan/](extra-vlan/README.md).

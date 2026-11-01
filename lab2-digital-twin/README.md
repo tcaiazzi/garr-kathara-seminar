@@ -276,4 +276,4 @@ La seconda change request, BFD su tutti i link di backbone, è l'extra per casa 
 
 ## Esercizio extra: configurare OSPF da zero
 
-Chi vuole esercitarsi sulla configurazione OSPF partendo da router senza configurazione trova scheletro, traccia e checker in [extra-ospf-da-zero/](extra-ospf-da-zero/TRACCIA.md).
+Chi vuole esercitarsi sulla configurazione OSPF partendo da router senza configurazione trova scheletro, traccia e checker in [extra-ospf-da-zero/](extra-ospf-da-zero/README.md).
