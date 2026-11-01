@@ -381,7 +381,7 @@ const GUIDA = [
             codice: "# VLAN 100: porta di accesso eth1 (pc2) + trunk eth0, taggato 100\nip link add link eth0 name eth0.100 type vlan id 100\nip link add br100 type bridge\nip link set eth1 master br100\nip link set eth0.100 master br100\nip link set eth0.100 up\nip link set br100 up\n\n# VLAN 101: porta di accesso eth2 (pc3) + trunk eth0, taggato 101\nip link add link eth0 name eth0.101 type vlan id 101\nip link add br101 type bridge\nip link set eth2 master br101\nip link set eth0.101 master br101\nip link set eth0.101 up\nip link set br101 up",
           },
         ],
-        notaSuggerimenti: "Si sbloccano uno alla volta. Proviamo prima da soli: gli ultimi due contengono la configurazione completa dei router.",
+        notaSuggerimenti: "Si sbloccano uno alla volta. Proviamo prima da soli: gli ultimi due contengono la configurazione completa degli switch.",
         problemi: [
           "<b>Un dispositivo non compare</b>: dopo aver modificato <code>lab.conf</code> serve <code>kathara lrestart -d labs/lab1/vlan</code>.",
           "<b>La sottointerfaccia non inoltra</b>: è rimasta spenta; anche il bridge va portato su.",
@@ -693,7 +693,7 @@ const GUIDA = [
         lista: [
           "<code>bfdd=yes</code> (e le sue opzioni) nel file <code>daemons</code> di ogni router;",
           "<code>ip ospf bfd</code> sulle interfacce di backbone, cioè quelle point-to-point con un vicino OSPF (non sulle LAN di sede, che sono passive);",
-          "<code>show bfd peers</code> in vtysh: tutte le sessioni <b>up</b>;",
+          "riavviamo il twin con <code>kathara lrestart -d labs/lab2/ospf</code> e controlliamo <code>show bfd peers</code> in vtysh: tutte le sessioni <b>up</b>;",
           "collaudiamo con il checker dedicato, dalla radice del repository e con il lab fermo;",
           "rilanciamo <code>chaos.py --silent</code> e confrontiamo i tempi con quelli senza BFD.",
         ],

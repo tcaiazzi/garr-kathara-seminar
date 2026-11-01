@@ -92,7 +92,7 @@ cp -r lab2-digital-twin/soluzione labs/demo/soluzione
 python lab3-api/chaos.py --lab-dir labs/demo/soluzione
 ```
 
-(Su Windows: `Copy-Item -Recurse lab2-digital-twin\soluzione labs\demo\soluzione`.) Lavoriamo sempre su copie dentro `labs/`: avviando un lab, Kathará crea file nella sua cartella.
+(Su Windows: `New-Item -ItemType Directory -Force labs\demo`, poi `Copy-Item -Recurse lab2-digital-twin\soluzione labs\demo\soluzione`.) Lavoriamo sempre su copie dentro `labs/`: avviando un lab, Kathará crea file nella sua cartella.
 
 ### Due modi di rompere un link
 
@@ -114,6 +114,8 @@ Su r1:eth1 e r2:eth0, le due estremità di n12:
 Tutto passa da `exec` nei container, senza toccare la configurazione del twin. Nella timeline `>>>` e `<<<` sono guasto e ripristino, `***` è un cambio di next-hop. Il tempo di reroute va da `>>>` a `***`; i ping persi dicono quanto è durata l'interruzione per gli utenti.
 
 ### Cosa aspettarci
+
+Un estratto dell'output (senza le righe dei singoli ping):
 
 ```
 [20:30:28] Cartella labs/lab2/ospf letta: 7 dispositivi, 7 domini di collisione
@@ -179,7 +181,7 @@ La applichiamo alla nostra copia `labs/lab2/ospf`, quella con la sede C:
 
 1. `bfdd=yes` (e le sue opzioni) nel file `daemons` di ogni router;
 2. `ip ospf bfd` sulle interfacce di backbone, cioè quelle point-to-point con un vicino OSPF. Le LAN di sede sono passive: nessun peer, nessun BFD;
-3. `show bfd peers` in `vtysh`: tutte le sessioni `up`.
+3. riavviamo il twin con `kathara lrestart -d labs/lab2/ospf` e controlliamo `show bfd peers` in `vtysh`: tutte le sessioni `up`.
 
 Ecco cosa cambia nei file di r1; lo schema è lo stesso su r2, r3 e r4.
 
@@ -221,6 +223,8 @@ kathara lclean -d labs/lab2/ospf
 python -m kathara_lab_checker --config lab2-digital-twin/checker/correction-bfd.yaml --lab labs/lab2/ospf --no-cache --report-type csv
 ```
 
+Oltre ai controlli del Lab 2, verifica che `bfdd` sia attivo su ogni router e che le sessioni BFD verso i due vicini siano `up`. La soluzione passa 155 test su 155.
+
 Infine rilanciamo il guasto silenzioso e confrontiamo i tempi con quelli senza BFD:
 
 ```
@@ -237,6 +241,8 @@ cp -r lab2-digital-twin/soluzione lab2-digital-twin/soluzione-bfd labs/demo/
 python lab3-api/chaos.py --lab-dir labs/demo/soluzione --silent
 python lab3-api/chaos.py --lab-dir labs/demo/soluzione-bfd --silent
 ```
+
+(Su Windows: `New-Item -ItemType Directory -Force labs\demo`, poi `Copy-Item -Recurse lab2-digital-twin\soluzione, lab2-digital-twin\soluzione-bfd labs\demo`.)
 
 ---
 

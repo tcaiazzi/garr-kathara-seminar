@@ -33,11 +33,20 @@ Obiettivo: costruire **da zero** un piccolo lab Kathará e prendere confidenza c
 
 ## 1. Creiamo il lab
 
-Dalla radice del repository creiamo la cartella del lab ed entriamoci:
+Dalla radice del repository creiamo la cartella del lab ed entriamoci.
+
+Linux / macOS:
 
 ```
 mkdir -p labs/lab1/static-routing
 cd labs/lab1/static-routing
+```
+
+Windows (PowerShell):
+
+```
+New-Item -ItemType Directory -Force labs\lab1\static-routing
+cd labs\lab1\static-routing
 ```
 
 Dentro la cartella servono:
